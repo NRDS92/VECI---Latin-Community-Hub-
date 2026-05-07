@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "isolatedModules": true,
+
+    "rootDir": "./apps/backend/src",
+    "outDir": "./dist",
+
+    "lib": ["ES2022"],
+    "types": ["node", "jest"],
+
+    "typeRoots": [
+      "./node_modules/@types",
+      "./apps/backend/types"
+    ]
+  },
+
+  "include": ["apps/backend/src"]
+}

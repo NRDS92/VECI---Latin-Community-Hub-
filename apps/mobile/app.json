@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Veci",
+    "slug": "Veci-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "mobile",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+
+    "icon": "./assets/icon.png",
+
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B0F1A"
+    },
+
+    "androidStatusBar": {
+      "backgroundColor": "#0B0F1A",
+      "barStyle": "light-content"
+    },
+
+    "plugins": [
+      "expo-router",
+      "@react-native-community/datetimepicker",
+      "expo-web-browser"
+    ],
+
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+
+    "android": {
+      "package": "com.veci.mobile",
+      "permissions": ["ACCESS_FINE_LOCATION"],
+      "edgeToEdgeEnabled": false,
+
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B0F1A"
+      }
+    },
+
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b02b8acf-75cb-45b7-b63d-c7a5f50b1d71"
+      }
+    }
+  }
+}
