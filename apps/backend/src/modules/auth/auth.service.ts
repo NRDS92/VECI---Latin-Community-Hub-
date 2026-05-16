@@ -14,6 +14,7 @@ const sanitizeUser = (user: any) => ({
         cityId: user.cityId,
         profileImage: user.profileImage,
         favorites: user.favorites,
+        bio: user.bio,
     });
 
 export const registerUser = async (data: RegisterInput) => {

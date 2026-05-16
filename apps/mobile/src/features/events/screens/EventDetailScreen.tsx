@@ -169,7 +169,6 @@ export default function EventDetailScreen() {
     );
   }
 
-  console.log("🧠 FORM:", form);
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}

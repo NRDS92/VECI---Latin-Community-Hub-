@@ -56,15 +56,36 @@ export default function ProfileScreen() {
 
     const handleSave = async () => {
         try {
-            const updated = await updateUser({
-                name,
-                cityId,
-                bio,
-                profileImage,
-            });
+            const payload: any = {};
+
+            if (name !== user?.name) payload.name = name;
+            if (cityId !== user?.cityId) payload.cityId = cityId;
+
+            // 🔥 CLAVE: solo enviar bio si tiene contenido
+            if (bio && bio.trim() !== user?.bio) {
+            payload.bio = bio;
+            }
+
+            // 🔥 SOLO si cambió
+            if (profileImage && profileImage !== user?.profileImage) {
+            payload.profileImage = profileImage;
+            }
+
+            // 🚨 si no hay cambios, no hacer request
+            if (Object.keys(payload).length === 0) {
+            setIsEditing(false);
+            return;
+            }
+
+            const updated = await updateUser(payload);
+
+            console.log("🟢 UPDATED USER:", updated);
 
             setUser(updated);
+            await AsyncStorage.setItem("user", JSON.stringify(updated));
+
             setIsEditing(false);
+
         } catch (error: any) {
             console.log("UPDATE ERROR FULL:", error?.response?.data);
         }
@@ -95,31 +116,25 @@ export default function ProfileScreen() {
     const handleChangeImage = async () => {
         try {
             const uri = await pickImage();
-            if (!uri || !token) return;
+            if (!uri || !token || !user) return;
 
-            // preview inmediato
             setProfileImage(uri);
 
             const res = await uploadProfileImage(uri, token);
-
             const newImage = res.profileImage;
 
-            setUser((prev) => ({
-            ...prev!,
+            const updated = await updateUser({
             profileImage: newImage,
-            }));
+            });
 
-            setProfileImage(newImage);
 
-            await AsyncStorage.setItem(
-            "user",
-            JSON.stringify({
-                ...user,
-                profileImage: newImage,
-            })
-            );
+            setUser(updated);
+            setProfileImage(updated.profileImage);
+
+            await AsyncStorage.setItem("user", JSON.stringify(updated));
+
         } catch (error) {
-            console.log(error);
+            console.log("IMAGE ERROR:", error);
         }
     };
     const handleDeleteAccount = () => {
@@ -156,13 +171,14 @@ export default function ProfileScreen() {
         );
     };
     useEffect(() => {
-        if (user) {
-            setName(user.name || "");
-            setCityId(user.cityId || "");
-            setBio(user.bio || "");
-            setProfileImage(user.profileImage || ""); // 🔥 CLAVE
-        }
-    }, [user]);
+        if (!user || isEditing) return;
+
+        setName(user.name ?? "");
+        setCityId(user.cityId ?? "");
+        setBio(user.bio ?? "");
+        setProfileImage(user.profileImage ?? "");
+
+    }, [user, isEditing]);
 
     return (
         <View style={styles.wrapper}>
