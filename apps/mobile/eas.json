@@ -19,10 +19,9 @@
         }
         },
         "production": {
-        "env": {
-            "ENV": "production",
-            "EXPO_PUBLIC_API_URL": "https://veci-api-pm1e.onrender.com"
-        }
+            "android": {
+                "buildType": "apk"
+            }
         }
     }
 }

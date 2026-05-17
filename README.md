@@ -99,20 +99,3 @@ discover/
 
 ### Discover
 - GET /api/v1/discover
-
----
-
-## ⚙️ Setup
-
-### Backend
-
-```bash
-cd apps/backend
-npm install
-npm run dev
-
-### Frontend
-
-cd apps/mobile
-npm install
-npx expo start
