@@ -11,17 +11,26 @@
             "EXPO_PUBLIC_API_URL": "http://192.168.178.77:5000"
         }
         },
+
         "staging": {
         "distribution": "internal",
         "env": {
             "ENV": "staging",
-            "EXPO_PUBLIC_API_URL": "https://veci-api-pm1e.onrender.com"
+            "EXPO_PUBLIC_API_URL": "https://veci-api-pm1e.onrender.com",
+            "EXPO_PUBLIC_GEOAPIFY_API_KEY": "TU_GEOAPIFY_KEY"
         }
         },
+
         "production": {
-            "android": {
-                "buildType": "apk"
-            }
+        "android": {
+            "buildType": "apk"
+        },
+
+        "env": {
+            "ENV": "production",
+            "EXPO_PUBLIC_API_URL": "https://veci-api-pm1e.onrender.com",
+            "EXPO_PUBLIC_GEOAPIFY_API_KEY": "TU_GEOAPIFY_KEY"
+        }
         }
     }
 }
