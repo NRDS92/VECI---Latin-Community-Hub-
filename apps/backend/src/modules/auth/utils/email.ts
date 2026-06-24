@@ -4,7 +4,7 @@ export const sendVerificationEmail = async (
     email: string,
     token: string
 ) => {
-    const url = `http://localhost:5000/api/v1/auth/verify/${token}`;
+    const url = `https://veci-api-pm1e.onrender.com/api/v1/auth/verify/${token}`;
     console.log("EMAIL BEFORE SEND:", email);
     await resend.emails.send({
         from: process.env.EMAIL_FROM!,
