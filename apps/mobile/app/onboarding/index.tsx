@@ -10,6 +10,8 @@ import {
 import { useRef } from "react";
 import { router } from "expo-router";
 import { setOnboardingSeen } from "../../src/shared/storage/onboarding";
+import { useState } from "react";
+import { updateUser } from "../../src/features/user/api/user.api";
 
 const { width, height } = Dimensions.get("window");
 
@@ -35,11 +37,23 @@ const SLIDES = [
 ];
 
 export default function OnboardingScreen() {
+  const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef<any>(null);
 
   const handleStart = async () => {
-    await setOnboardingSeen();
-    router.replace("/(tabs)");
+    try {
+      // backend  save
+      await updateUser({
+        onboardingCompleted: true,
+      });
+
+      // locally save);
+
+      router.replace("/(tabs)");
+    } catch (error) {
+      console.log("❌ ONBOARDING UPDATE ERROR", error);
+    }
   };
 
   const renderItem = ({ item, index }: any) => {
@@ -60,6 +74,7 @@ export default function OnboardingScreen() {
       inputRange,
       outputRange: [0, 1, 0],
     });
+    
 
     return (
       <View style={{ width, height }}>
@@ -83,11 +98,19 @@ export default function OnboardingScreen() {
       </View>
     );
   };
+  const handleNext = () => {
+    flatListRef.current?.scrollToIndex({
+      index: currentIndex + 1,
+      animated: true,
+    });
+  };
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
       {/* 🔥 SLIDER */}
       <Animated.FlatList
+        ref={flatListRef}
         data={SLIDES}
         keyExtractor={(item) => item.id}
         horizontal
@@ -98,11 +121,29 @@ export default function OnboardingScreen() {
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           { useNativeDriver: true }
         )}
+        onMomentumScrollEnd={(event) => {
+          const index = Math.round(
+            event.nativeEvent.contentOffset.x / width
+          );
+
+          setCurrentIndex(index);
+        }}
       />
 
       {/* 🔥 CTA */}
-      <TouchableOpacity style={styles.button} onPress={handleStart}>
-        <Text style={styles.buttonText}>Explore events</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={
+          currentIndex === SLIDES.length - 1
+            ? handleStart
+            : handleNext
+        }
+      >
+        <Text style={styles.buttonText}>
+          {currentIndex === SLIDES.length - 1
+            ? "Explore Events"
+            : "Next"}
+        </Text>
         <View style={styles.dots}>
           {SLIDES.map((_, i) => {
             const opacity = scrollX.interpolate({

@@ -5,6 +5,7 @@ export const updateUser = async (data: {
         cityId?: string;
         bio?: string;
         profileImage?: string;
+        onboardingCompleted?: boolean;
     }) => {
     const res = await api.post("/users/me", data);
 

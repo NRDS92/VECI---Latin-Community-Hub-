@@ -34,9 +34,14 @@ export default function LoginScreen() {
       setError("");
 
       const { user, token } = await loginRequest(email, password);
-      console.log("LOGIN USER:", user);
 
       await login(token, user);
+      if (!user.onboardingCompleted) {
+        router.replace("/onboarding");
+        return;
+      }
+      // 🔥 Usuario existente
+      router.replace("/(tabs)");
 
     } catch (error: any) {
       const message =
