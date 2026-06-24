@@ -13,6 +13,7 @@ export interface IUser extends Document {
   updatedAt: Date;
   isVerified: boolean;
   verificationToken?: string;
+  onboardingCompleted: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -69,6 +70,10 @@ const UserSchema = new Schema<IUser>(
 
     verificationToken: {
       type: String,
+    },
+    onboardingCompleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {

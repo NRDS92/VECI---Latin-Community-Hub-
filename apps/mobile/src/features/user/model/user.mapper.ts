@@ -9,4 +9,6 @@ export const mapUserFromApi = (data: any): User => ({
     profileImage: data.profileImage,
     bio: data.bio,
     favorites: data.favorites || [],
+    
+    onboardingCompleted: data.onboardingCompleted ?? false,
 });

@@ -7,4 +7,6 @@ export type User = {
   profileImage?: string | null;
   bio?: string | null;
   favorites: string[];
+
+  onboardingCompleted?: boolean;
 };
