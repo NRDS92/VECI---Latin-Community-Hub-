@@ -27,6 +27,7 @@ export const updateUser = async (
         cityId?: string;
         bio?: string;
         profileImage?: string;
+        onboardingCompleted?: boolean;
     }
     ) => {
     const user = await User.findById(userId);
@@ -41,6 +42,9 @@ export const updateUser = async (
     if (data.bio !== undefined) user.bio = data.bio;
     if (data.profileImage !== undefined)
         user.profileImage = data.profileImage;
+    if (data.onboardingCompleted !== undefined) {
+        user.onboardingCompleted = data.onboardingCompleted;
+    }
 
     await user.save();
 
@@ -65,5 +69,6 @@ export const getMe = async (userId: string) => {
         favorites: user.favorites,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        onboardingCompleted: user.onboardingCompleted,
     };
 };
