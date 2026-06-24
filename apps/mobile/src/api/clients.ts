@@ -3,7 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config/env";
 
 export const api = axios.create({
-  baseURL: `${API_URL}/api/v1`,
+  baseURL: `https://veci-api-pm1e.onrender.com/api/v1`,
   timeout: 15000,
 });
 console.log(API_URL);
