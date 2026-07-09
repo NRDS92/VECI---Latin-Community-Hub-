@@ -7,6 +7,12 @@ import { generateVerificationToken } from "./utils/tokens";
 import { sendVerificationEmail } from "./utils/email";
 import { AppError } from "../../shared/errors/AppError";
 
+interface GoogleAuthorization {
+    code: string;
+    codeVerifier: string;
+    redirectUri: string;
+}
+
 
 const sanitizeUser = (user: any) => ({
     _id: user._id,
@@ -94,9 +100,9 @@ export const loginUser = async (data: LoginInput) => {
 };
 
 export const loginWithGoogle = async (
-    code: string
+    authorization: GoogleAuthorization
 ) => {
-    const googleUser = await authenticateGoogleUser(code);
+    const googleUser = await authenticateGoogleUser(authorization);
 
     const email = googleUser.email.toLowerCase().trim();
 

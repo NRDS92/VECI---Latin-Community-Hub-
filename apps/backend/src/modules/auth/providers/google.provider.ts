@@ -27,6 +27,12 @@ const exchangeCodeForTokens = async (
   authorization: GoogleAuthorization
 ): Promise<string> => {
   try {
+    console.log("=== GOOGLE TOKEN EXCHANGE ===");
+    console.log("Code:", authorization.code);
+    console.log("Redirect URI:", authorization.redirectUri);
+    console.log("Client ID:", process.env.GOOGLE_WEB_CLIENT_ID);
+    console.log("Has Client Secret:", !!process.env.GOOGLE_CLIENT_SECRET);
+    console.log("Code Verifier:", authorization.codeVerifier);
 
     const { data } = await axios.post(
       "https://oauth2.googleapis.com/token",
@@ -48,7 +54,11 @@ const exchangeCodeForTokens = async (
 
   } catch (error) {
 
-    console.error("Google Token Exchange Error:", error);
+    if (axios.isAxiosError(error)) {
+      console.error("Google Response:", error.response?.data);
+    }
+
+    console.error(error);
 
     throw new AppError(
       "Unable to exchange Google authorization code.",
