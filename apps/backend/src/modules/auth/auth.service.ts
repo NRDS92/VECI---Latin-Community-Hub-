@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import { User, AUTH_PROVIDERS } from "../users/user.model";
 import { RegisterInput, LoginInput } from "./auth.types";
-import { verifyGoogleToken } from "./providers/google.provider";
+import { authenticateGoogleUser } from "./providers/google.provider";
 import { generateJWT } from "../auth/utils/jwt";
 import { generateVerificationToken } from "./utils/tokens";
 import { sendVerificationEmail } from "./utils/email";
@@ -93,8 +93,10 @@ export const loginUser = async (data: LoginInput) => {
     };
 };
 
-export const loginWithGoogle = async (accessToken: string) => {
-    const googleUser = await verifyGoogleToken(accessToken);
+export const loginWithGoogle = async (
+    code: string
+) => {
+    const googleUser = await authenticateGoogleUser(code);
 
     const email = googleUser.email.toLowerCase().trim();
 
