@@ -52,13 +52,17 @@ const exchangeCodeForTokens = async (
 
     return data.id_token;
 
-  } catch (error) {
+  } catch (error: any) {
 
     if (axios.isAxiosError(error)) {
       console.error("Google Response:", error.response?.data);
     }
+     console.error("========== GOOGLE ERROR ==========");
+  console.error(error);
+  console.error(error.response?.data);
+  console.error(error.message);
+  console.error("=================================");
 
-    console.error(error);
 
     throw new AppError(
       "Unable to exchange Google authorization code.",
