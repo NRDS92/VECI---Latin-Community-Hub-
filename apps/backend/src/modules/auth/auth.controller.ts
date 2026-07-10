@@ -24,9 +24,9 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 export const googleLogin = catchAsync(
   async (req: Request, res: Response) => {
 
-    const authorization = req.body;
+    const { idToken } = req.body;
 
-    const result = await authService.loginWithGoogle(authorization);
+    const result = await authService.loginWithGoogle(idToken);
 
     res.json({
       success: true,
@@ -34,6 +34,7 @@ export const googleLogin = catchAsync(
     });
 
   }
+  
 );
 
 export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
