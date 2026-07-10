@@ -21,16 +21,20 @@ export const login = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-export const googleLogin = catchAsync(async (req: Request, res: Response) => {
-  const { accessToken } = req.body;
+export const googleLogin = catchAsync(
+  async (req: Request, res: Response) => {
 
-  const result = await authService.loginWithGoogle(accessToken);
+    const authorization = req.body;
 
-  res.json({
-    success: true,
-    data: result,
-  });
-});
+    const result = await authService.loginWithGoogle(authorization);
+
+    res.json({
+      success: true,
+      data: result,
+    });
+
+  }
+);
 
 export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   const token = Array.isArray(req.params.token)
