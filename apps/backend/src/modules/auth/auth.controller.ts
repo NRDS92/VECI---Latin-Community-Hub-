@@ -34,6 +34,7 @@ export const googleLogin = catchAsync(
     });
 
   }
+  
 );
 
 export const verifyEmail = catchAsync(async (req: Request, res: Response) => {

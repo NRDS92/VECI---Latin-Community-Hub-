@@ -98,6 +98,7 @@ export const loginWithGoogle = async (
 ) => {
     const googleUser = await authenticateGoogleUser(idToken);
 
+    
     const email = googleUser.email.toLowerCase().trim();
 
     let user = await User.findOne({ email });
