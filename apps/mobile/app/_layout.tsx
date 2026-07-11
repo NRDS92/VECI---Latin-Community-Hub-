@@ -3,9 +3,14 @@ import { AuthProvider, useAuth } from "../src/shared/context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StatusBar } from "react-native";
 import { Modal, View } from "react-native";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import LoginScreen from "../src/features/auth/screens/LoginScreen";
 
 const queryClient = new QueryClient();
+
+GoogleSignin.configure({
+  webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID!,
+});
 
 function RootContent() {
   const { showLoginModal } = useAuth();

@@ -1,12 +1,42 @@
-import * as Google from "expo-auth-session/providers/google";
-import * as WebBrowser from "expo-web-browser";
+import { useCallback } from "react";
+import {
+    GoogleSignin,
+    statusCodes,
+} from "@react-native-google-signin/google-signin";
 
-WebBrowser.maybeCompleteAuthSession();
+export function useGoogleAuth() {
+    const signIn = useCallback(async (): Promise<string> => {
+        try {
+            // Verifica que Google Play Services esté disponible
+            await GoogleSignin.hasPlayServices();
 
-export const useGoogleAuth = () => {
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: "TU_GOOGLE_CLIENT_ID",
-  });
+            // Abre el selector de cuentas
+            const response = await GoogleSignin.signIn();
 
-  return { request, response, promptAsync };
-};
+            console.log("Google SignIn Response:", response);
+
+            // Obtiene el ID Token
+            const idToken = response.data?.idToken;
+
+            if (!idToken) {
+                throw new Error("Google did not return an ID Token.");
+            }
+
+        return idToken;
+        } catch (error: any) {
+            if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+                throw new Error("Google Sign-In cancelled.");
+            }
+
+            if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+                throw new Error("Google Play Services not available.");
+            }
+
+            throw error;
+        }
+    }, []);
+
+    return {
+        signIn,
+    };
+}
