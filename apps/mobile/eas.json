@@ -8,7 +8,9 @@
         "distribution": "internal",
         "env": {
             "ENV": "local",
-            "EXPO_PUBLIC_API_URL": "http://192.168.178.77:5000"
+            "EXPO_PUBLIC_API_URL": "http://192.168.178.77:5000",
+            "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "853721439852-1haegoc6klrqa0rj886g34pidlhafbc9.apps.googleusercontent.com",
+            "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "853721439852-9ufj2nqltbk8h09jshfk305g7be7qk1q.apps.googleusercontent.com"
         }
         },
 
@@ -17,7 +19,9 @@
         "env": {
             "ENV": "staging",
             "EXPO_PUBLIC_API_URL": "https://veci-api-pm1e.onrender.com",
-            "EXPO_PUBLIC_GEOAPIFY_API_KEY": "TU_GEOAPIFY_KEY"
+            "EXPO_PUBLIC_GEOAPIFY_API_KEY": "TU_GEOAPIFY_KEY",
+            "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "853721439852-1haegoc6klrqa0rj886g34pidlhafbc9.apps.googleusercontent.com",
+            "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "853721439852-9ufj2nqltbk8h09jshfk305g7be7qk1q.apps.googleusercontent.com"
         }
         },
 
@@ -25,11 +29,12 @@
         "android": {
             "buildType": "apk"
         },
-
         "env": {
             "ENV": "production",
             "EXPO_PUBLIC_API_URL": "https://veci-api-pm1e.onrender.com",
-            "EXPO_PUBLIC_GEOAPIFY_API_KEY": "TU_GEOAPIFY_KEY"
+            "EXPO_PUBLIC_GEOAPIFY_API_KEY": "TU_GEOAPIFY_KEY",
+            "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "853721439852-1haegoc6klrqa0rj886g34pidlhafbc9.apps.googleusercontent.com",
+            "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "853721439852-9ufj2nqltbk8h09jshfk305g7be7qk1q.apps.googleusercontent.com"
         }
         }
     }

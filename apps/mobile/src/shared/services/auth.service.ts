@@ -1,9 +1,25 @@
 import { api } from "../../api/clients";
 
-export const loginRequest = async (email: string, password: string) => {
+export const loginRequest = async (
+  email: string,
+  password: string
+) => {
   const res = await api.post("/auth/login", {
     email,
     password,
+  });
+
+  return res.data.data as {
+    user: any;
+    token: string;
+  };
+};
+
+export const googleLoginRequest = async (
+  idToken: string
+) => {
+  const res = await api.post("/auth/google", {
+    idToken,
   });
 
   return res.data.data as {
