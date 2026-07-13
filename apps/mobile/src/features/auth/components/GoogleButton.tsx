@@ -15,8 +15,6 @@ export default function GoogleButton() {
       // 1. Obtener ID Token desde Google
       const idToken = await signIn();
 
-      console.log("Google ID Token:", idToken);
-
       // 2. Enviarlo al backend
       const { token, user } = await googleLoginRequest(idToken);
 
