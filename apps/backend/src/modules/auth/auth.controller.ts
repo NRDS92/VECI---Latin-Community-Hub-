@@ -56,3 +56,19 @@ export const deleteAccount = catchAsync(async (req: any, res: Response) => {
     message: "Account deleted successfully",
   });
 });
+
+export const forgotPassword = catchAsync(
+  async (req: Request, res: Response) => {
+
+    const { email } = req.body;
+
+    await authService.forgotPassword(email);
+
+    res.json({
+      success: true,
+      message:
+        "If an account with this email exists, you will receive password reset instructions.",
+    });
+
+  }
+);

@@ -3,9 +3,16 @@ import { User, AUTH_PROVIDERS } from "../users/user.model";
 import { RegisterInput, LoginInput } from "./auth.types";
 import { authenticateGoogleUser } from "./providers/google.provider";
 import { generateJWT } from "../auth/utils/jwt";
-import { generateVerificationToken } from "./utils/tokens";
-import { sendVerificationEmail } from "./utils/email";
 import { AppError } from "../../shared/errors/AppError";
+import {
+    generateVerificationToken,
+    generatePasswordResetToken,
+} from "./utils/tokens";
+
+import {
+    sendVerificationEmail,
+    sendPasswordResetEmail,
+} from "./utils/email";
 
 
 const sanitizeUser = (user: any) => ({
@@ -144,7 +151,6 @@ export const loginWithGoogle = async (
     };
 };
 
-
 export const verifyEmailToken = async (token: string) => {
     const user = await User.findOne({ verificationToken: token });
 
@@ -168,6 +174,43 @@ export const deleteUserAccount = async (userId: string) => {
     }
 
     await User.findByIdAndDelete(userId);
+
+    return true;
+};
+
+export const forgotPassword = async (
+    email: string
+) => {
+
+    const emailNormalized = email.toLowerCase().trim();
+
+    const user = await User.findOne({
+        email: emailNormalized,
+    });
+
+    // Nunca revelar si el correo existe o no
+    if (!user) {
+        return true;
+    }
+
+    // Solo las cuentas EMAIL pueden recuperar contraseña
+    if (user.provider !== AUTH_PROVIDERS.EMAIL) {
+        return true;
+    }
+
+    const token = generatePasswordResetToken();
+
+    user.passwordResetToken = token;
+    user.passwordResetExpires = new Date(
+        Date.now() + 15 * 60 * 1000
+    );
+
+    await user.save();
+
+    await sendPasswordResetEmail(
+        user.email,
+        token
+    );
 
     return true;
 };
