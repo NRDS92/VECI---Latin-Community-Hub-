@@ -72,3 +72,16 @@ export const forgotPassword = catchAsync(
 
   }
 );
+
+export const resetPassword = catchAsync(
+  async (req: Request, res: Response) => {
+    const { token, password } = req.body;
+
+    await authService.resetPassword(token, password);
+
+    res.json({
+      success: true,
+      message: "Password updated successfully.",
+    });
+  }
+);
