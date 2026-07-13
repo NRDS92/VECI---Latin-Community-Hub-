@@ -10,12 +10,11 @@ export function useGoogleAuth() {
             // Verifica que Google Play Services esté disponible
             await GoogleSignin.hasPlayServices();
 
-            // Abre el selector de cuentas
             const response = await GoogleSignin.signIn();
-
-            console.log("Google SignIn Response:", response);
-
-            // Obtiene el ID Token
+            if (response) {
+                console.log("Google SignIn Response: Success");
+            }
+            
             const idToken = response.data?.idToken;
 
             if (!idToken) {

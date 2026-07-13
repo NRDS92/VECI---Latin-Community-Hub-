@@ -4,3 +4,13 @@ node_modules
 dist
 build
 uploads/
+
+# VSCode
+.vscode/
+
+# Android bug reports
+bugreport*.zip
+apps/mobile/bugreport*.zip
+
+# Android backups
+apps/mobile/android_backup/
