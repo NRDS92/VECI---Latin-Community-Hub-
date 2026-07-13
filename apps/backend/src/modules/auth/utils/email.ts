@@ -57,7 +57,7 @@ export const sendPasswordResetEmail = async (
     token: string
 ) => {
 
-    const url = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    const url = `https://www.veci-latin.com/reset-password/${token}`;
 
     await resend.emails.send({
         from: process.env.EMAIL_FROM!,
