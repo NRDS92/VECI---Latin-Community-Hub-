@@ -1,4 +1,11 @@
 import crypto from "crypto";
 
-export const generateVerificationToken = () =>
-  crypto.randomBytes(32).toString("hex");
+const TOKEN_SIZE = 32;
+
+const generateToken = () => {
+    return crypto.randomBytes(TOKEN_SIZE).toString("hex");
+};
+
+export const generateVerificationToken = () => generateToken();
+
+export const generatePasswordResetToken = () => generateToken();

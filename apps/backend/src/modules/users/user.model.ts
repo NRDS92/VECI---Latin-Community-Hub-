@@ -25,6 +25,8 @@ export interface IUser extends Document {
   isVerified: boolean;
   verificationToken?: string;
   onboardingCompleted: boolean;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -110,6 +112,15 @@ const UserSchema = new Schema<IUser>(
     onboardingCompleted: {
       type: Boolean,
       default: false,
+    },
+    passwordResetToken: {
+      type: String,
+      default: null,
+    },
+
+    passwordResetExpires: {
+      type: Date,
+      default: null,
     },
   },
   {

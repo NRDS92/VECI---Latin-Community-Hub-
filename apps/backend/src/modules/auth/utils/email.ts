@@ -51,3 +51,59 @@ export const sendVerificationEmail = async (
         `,
     });
 };
+
+export const sendPasswordResetEmail = async (
+    email: string,
+    token: string
+) => {
+
+    const url = `https://veci-api-pm1e.onrender.com/reset-password/${token}`;
+
+    await resend.emails.send({
+        from: process.env.EMAIL_FROM!,
+        to: email,
+        subject: "Reset your VECI password",
+        html: `
+        <div style="background:#0B0F1A;padding:40px 20px;font-family:Arial,sans-serif;">
+            <div style="max-width:480px;margin:0 auto;background:#121826;border-radius:16px;padding:30px;text-align:center;">
+
+                <h1 style="color:#FF7A00;">VECI</h1>
+
+                <h2 style="color:#FFFFFF;">
+                    Reset your password
+                </h2>
+
+                <p style="color:#9CA3AF;">
+                    We received a request to reset your password.
+                    If you requested this, click the button below.
+                </p>
+
+                <a
+                    href="${url}"
+                    style="
+                        display:inline-block;
+                        background:#FF7A00;
+                        color:#FFFFFF;
+                        padding:14px 22px;
+                        border-radius:12px;
+                        text-decoration:none;
+                        font-weight:bold;
+                        margin-top:20px;
+                    "
+                >
+                    Reset password
+                </a>
+
+                <p style="color:#6B7280;font-size:12px;margin-top:20px;">
+                    This link expires in 15 minutes.
+                </p>
+
+                <p style="color:#6B7280;font-size:12px;">
+                    If you didn't request a password reset, you can safely ignore this email.
+                </p>
+
+            </div>
+        </div>
+        `,
+    });
+};
