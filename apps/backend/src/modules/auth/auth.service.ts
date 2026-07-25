@@ -216,29 +216,29 @@ export const forgotPassword = async (
 };
 
 export const resetPassword = async (
-  token: string,
-  password: string
+    token: string,
+    password: string
 ) => {
 
-  const user = await User.findOne({
-    passwordResetToken: token,
-    passwordResetExpires: { $gt: new Date() },
-  });
+    const user = await User.findOne({
+        passwordResetToken: token,
+        passwordResetExpires: { $gt: new Date() },
+    });
 
-  if (!user) {
-    throw new AppError(
-      "Invalid or expired reset token.",
-      400,
-      "INVALID_RESET_TOKEN"
-    );
-  }
+    if (!user) {
+        throw new AppError(
+        "Invalid or expired reset token.",
+        400,
+        "INVALID_RESET_TOKEN"
+        );
+    }
 
-  user.passwordHash = await bcrypt.hash(password, 12);
+    user.passwordHash = await bcrypt.hash(password, 12);
 
-  user.passwordResetToken = undefined;
-  user.passwordResetExpires = undefined;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
 
-  await user.save();
+    await user.save();
 
-  return true;
+    return true;
 };

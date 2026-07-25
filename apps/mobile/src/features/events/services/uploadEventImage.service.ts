@@ -1,9 +1,6 @@
-import { api } from "../../../api/clients";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const uploadEventImage = async (
-    uri: string,
-    token: string
-    ) => {
+export const uploadEventImage = async (uri: string) => {
     const formData = new FormData();
 
     formData.append("image", {
@@ -12,8 +9,10 @@ export const uploadEventImage = async (
         type: "image/jpeg",
     } as any);
 
-    const res = await fetch(
-        "http://10.0.2.2:5000/api/v1/upload", 
+    const token = await AsyncStorage.getItem("token");
+
+    const response = await fetch(
+        "https://veci-api-pm1e.onrender.com/api/v1/upload",
         {
         method: "POST",
         headers: {
@@ -23,11 +22,11 @@ export const uploadEventImage = async (
         }
     );
 
-    const data = await res.json();
+    console.log("STATUS:", response.status);
 
-    if (!data.success) {
-        throw new Error(data.message);
-    }
+    const json = await response.json();
 
-    return data.data;
+    console.log("BODY:", json);
+
+    return json.data;
 };

@@ -105,6 +105,22 @@ export default function LoginScreen() {
           />
         </View>
 
+        {/* PASSWORD */}
+        <TouchableOpacity
+          style={styles.forgotPasswordButton}
+          onPress={() => {
+            setShowLoginModal(false);
+
+            requestAnimationFrame(() => {
+              router.push("/(auth)/forgot-password");
+            });
+          }}
+        >
+          <Text style={styles.forgotPasswordText}>
+            Forgot your password?
+          </Text>
+        </TouchableOpacity>
+
         {/* ERROR */}
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -239,5 +255,15 @@ const styles = StyleSheet.create({
 
   secondaryText: {
     color: "#9ca3af",
+  },
+  forgotPasswordButton: {
+    alignSelf: "flex-end",
+    marginBottom: 18,
+  },
+
+  forgotPasswordText: {
+    color: "#FF7A00",
+    fontSize: 13,
+    fontWeight: "600",
   },
 });

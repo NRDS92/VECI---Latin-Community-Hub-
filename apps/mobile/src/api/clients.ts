@@ -3,10 +3,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../config/env";
 
 export const api = axios.create({
-  baseURL: `https://veci-api-pm1e.onrender.com/api/v1`,
+  baseURL: API_URL,
   timeout: 15000,
 });
-console.log(API_URL);
 // ✅ REQUEST (AQUÍ SE ENVÍA EL TOKEN)
 api.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem("token");
