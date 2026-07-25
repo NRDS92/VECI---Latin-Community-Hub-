@@ -6,6 +6,7 @@ import fs from "fs-extra";
 const router = Router();
 
 router.post("/", upload.single("image"), async (req, res, next) => {
+    console.log("📸 Upload request received");
     try {
         const file = req.file;
 

@@ -267,27 +267,6 @@ Future features:
 
 # Architecture
 
-```text
-                    ┌─────────────────────────────┐
-                    │        Mobile App           │
-                    │ React Native + Expo Router  │
-                    └──────────────┬──────────────┘
-                                   │
-                           HTTPS REST API
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │      Express Backend        │
-                    │      Node.js + TS           │
-                    └──────────────┬──────────────┘
-                                   │
-                ┌──────────────────┼──────────────────┐
-                │                  │                  │
-                ▼                  ▼                  ▼
-         MongoDB Atlas       Cloudinary          Resend
-          Application         Images         Email Service
-             Data
-```
-
 ![](docs/images/architecture.png) 
 
 ---
@@ -329,7 +308,6 @@ veci/
 ├── apps/
 │   ├── backend/
 │   ├── mobile/
-│   └── landing/
 │
 ├── docs/
 │
@@ -378,18 +356,6 @@ npx expo start
 
 ---
 
-## Landing
-
-```bash
-cd apps/landing
-
-npm install
-
-npm run dev
-```
-
----
-
 # Environment Variables
 
 ## Backend
@@ -420,14 +386,6 @@ CLOUDINARY_API_SECRET=
 
 ```env
 EXPO_PUBLIC_API_URL=
-```
-
----
-
-## Landing
-
-```env
-NEXT_PUBLIC_API_URL=
 ```
 
 ---

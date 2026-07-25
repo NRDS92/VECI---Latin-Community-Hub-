@@ -27,3 +27,14 @@ export const googleLoginRequest = async (
     token: string;
   };
 };
+
+export const forgotPasswordRequest = async (
+  email: string
+) => {
+  console.log(api.defaults.baseURL); 
+  const res = await api.post("/auth/forgot-password", {
+    email,
+  });
+   
+  return res.data;
+};

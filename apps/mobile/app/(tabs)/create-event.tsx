@@ -99,18 +99,16 @@ export default function CreateEventScreen() {
   const handleAddImage = async () => {
     try {
       const uri = await pickImage();
-      if (!uri || !token) return;
-
+      if (!uri) return;
       setIsUploading(true);
-
       let uploadedUrl;
 
       try {
-        uploadedUrl = await uploadEventImage(uri, token);
+        uploadedUrl = await uploadEventImage(uri);
       } catch (err) {
         // 🔥 retry automático (Render cold start)
         await new Promise((r) => setTimeout(r, 2000));
-        uploadedUrl = await uploadEventImage(uri, token);
+        uploadedUrl = await uploadEventImage(uri);
       }
 
       setImage(uploadedUrl);

@@ -1,3 +1,4 @@
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -5,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { useFavorites } from "../../src/features/discover/hoooks/useFavorites";
 import { useFavoriteEvents } from "../../src/features/user/hooks/useFavoritesEvents";
@@ -19,6 +21,13 @@ export default function FavoritesScreen() {
     isLoading,
     refetch,
   } = useFavoriteEvents();
+
+  // Se ejecuta cada vez que esta pantalla recibe el foco
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   return (
     <View style={styles.container}>
@@ -41,9 +50,7 @@ export default function FavoritesScreen() {
       ) : (
         <FlatList
           data={favoriteEvents}
-          keyExtractor={(item) =>
-            item._id.toString()
-          }
+          keyExtractor={(item) => item._id.toString()}
           renderItem={({ item }) => (
             <EventCard
               item={item}

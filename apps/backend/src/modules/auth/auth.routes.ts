@@ -1,7 +1,7 @@
 import { Router } from "express";
 import * as authController from "./auth.controller";
 import { authMiddleware } from "../../middleware/auth.middleware";
-import { forgotPassword, resetPassword } from "./auth.controller";
+
 
 
 const router = Router();

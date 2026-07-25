@@ -1,8 +1,11 @@
+import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../../shared/context/AuthContext";
 import { toggleFavorite } from "../services/favorite.service";
-import { useCallback } from "react";
 
 export const useFavorites = () => {
+  const queryClient = useQueryClient();
+
   const {
     favorites = [],
     setFavorites,
@@ -12,9 +15,7 @@ export const useFavorites = () => {
   } = useAuth();
 
   const handleToggle = async (eventId: string) => {
-    // 🔐 no auth
     if (!token) {
-      console.log("❌ NO TOKEN → LOGIN");
       setPendingAction(() => () => handleToggle(eventId));
       setShowLoginModal(true);
       return;
@@ -22,7 +23,6 @@ export const useFavorites = () => {
 
     const prevFavorites = [...favorites];
 
-    // 🔥 optimistic update
     setFavorites((prev) =>
       prev.includes(eventId)
         ? prev.filter((id) => id !== eventId)
@@ -32,17 +32,17 @@ export const useFavorites = () => {
     try {
       const updatedFavorites = await toggleFavorite(eventId);
 
-      // 🔥 backend is source of truth
       setFavorites(updatedFavorites);
-    } catch (error) {
-      console.log("FAVORITE ERROR", error);
 
-      // rollback
+      await queryClient.invalidateQueries({
+        queryKey: ["favorite-events"],
+      });
+    } catch (error) {
+      console.log(error);
       setFavorites(prevFavorites);
     }
   };
 
-  // 🔥 MEMOIZED (CLAVE)
   const isFavorite = useCallback(
     (eventId: string) => favorites.includes(eventId),
     [favorites]
