@@ -12,3 +12,27 @@ export const getPendingEvents = catchAsync(
         });
     }
 );
+
+export const approveEvent = catchAsync(
+    async (
+        req: Request<{ id: string }>,
+        res: Response
+    ) => {
+
+        // TODO:
+        // Replace this with authenticated admin user once
+        // the authentication and roles system is implemented.
+        const adminId = "TU_OBJECT_ID";
+
+        const event = await adminService.approveEvent(
+            req.params.id,
+            adminId
+        );
+
+        res.json({
+            success: true,
+            message: "Event approved successfully.",
+            data: event,
+        });
+    }
+);
