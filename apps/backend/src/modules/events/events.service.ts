@@ -3,6 +3,7 @@ import { Event, IEvent } from "./event.model";
 import { CreateEventInput } from "./events.validation";
 import { AppError } from "../../shared/errors/AppError";
 import { EventDocument } from "./event.model";
+import { MODERATION_STATUS } from "../../shared/constants/moderation";
 
 
 // 🚀 CREATE EVENT
@@ -34,16 +35,23 @@ export const createEvent = async (
             type: "Point",
             coordinates: [data.longitude, data.latitude],
         },
+
         contact: data.contact || {},
 
         dateStart: data.dateStart,
         dateEnd: data.dateEnd,
 
         createdBy: userId,
+
         businessId: data.businessId
-        ? new mongoose.Types.ObjectId(data.businessId)
-        : undefined,
+            ? new mongoose.Types.ObjectId(data.businessId)
+            : undefined,
+
         goodToKnow: data.goodToKnow || [],
+
+        moderation: {
+            status: MODERATION_STATUS.PENDING,
+        },
     });
 
     await event.save();

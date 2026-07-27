@@ -26,8 +26,9 @@ export const createEvent = catchAsync(async (req: Request, res: Response) => {
     );
 
     res.status(201).json({
-        success: true,
-        data: event,
+        "success": true,
+        "message": "Event submitted successfully and is pending review.",
+        "data": event
     });
 });
 
