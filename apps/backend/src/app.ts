@@ -8,6 +8,7 @@ import usersRoutes from "./modules/users/user.routes";
 import { errorMiddleware } from "./middleware/error.middleware";
 import businessRoutes from "./modules/business/business.routes";
 import uploadRoutes from "./modules/upload/upload.routes";
+import adminRoutes from "../src/modules/admin/admin.routes";
 
 const app: Express = express();
 
@@ -27,7 +28,7 @@ app.use("/api/v1/discover", discoverRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/business", businessRoutes);
 app.use("/api/v1/upload", uploadRoutes);
-app.use("/api/v1/admin", uploadRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 /*Health check endpoint*/
 app.get("/", (req: Request, res: Response) => {
