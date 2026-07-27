@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import * as discoverService from "./discover.service";
 import { Event } from "../events/event.model";
 import { Business } from "../business/business.model";
+import { MODERATION_STATUS } from "../../shared/constants/moderation";
 
 
 
@@ -99,7 +100,13 @@ export const getSearchSuggestions = async (req: Request, res: Response) => {
     const [events, businesses] = await Promise.all([
       type === "events" || type === "all"
         ? Event.find({
-            $or: [{ title: regex }, { category: regex }, { cityId: regex }],
+              status: "active",
+              "moderation.status": MODERATION_STATUS.APPROVED,
+              $or: [
+                  { title: regex },
+                  { category: regex },
+                  { cityId: regex },
+              ],
           })
             .limit(5)
             .select("title category cityId")
