@@ -7,6 +7,24 @@ import { MODERATION_STATUS,ModerationRejectionReason } from "../../shared/consta
 // Verify that the authenticated user has ADMIN role
 // before approving events.
 
+export const getEvents = async (
+    status?: string
+) => {
+
+    const filters: any = {};
+
+    if (status) {
+        filters["moderation.status"] = status;
+    }
+
+    return Event.find(filters)
+        .populate("createdBy", "name profileImage")
+        .populate("businessId", "name images")
+        .sort({
+            createdAt: -1,
+        });
+};
+
 
 export const getPendingEvents = async () => {
     return Event.find({
