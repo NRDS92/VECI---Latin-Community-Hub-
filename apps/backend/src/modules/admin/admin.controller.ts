@@ -34,3 +34,29 @@ export const approveEvent = catchAsync(
         });
     }
 );
+
+export const rejectEvent = catchAsync(
+    async (
+        req: Request<{ id: string }>,
+        res: Response
+    ) => {
+
+        const adminId =
+            "6a5473977311303a364400c1";
+
+        const event =
+            await adminService.rejectEvent(
+                req.params.id,
+                adminId,
+                req.body.reason,
+                req.body.comment
+            );
+
+        res.json({
+            success: true,
+            message:
+                "Event rejected successfully.",
+            data: event,
+        });
+    }
+);

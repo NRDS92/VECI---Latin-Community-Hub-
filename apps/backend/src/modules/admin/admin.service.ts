@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { AppError } from "../../shared/errors/AppError";
 import { Event } from "../events/event.model";
-import { MODERATION_STATUS } from "../../shared/constants/moderation";
+import { MODERATION_STATUS,ModerationRejectionReason } from "../../shared/constants/moderation";
 
 // TODO:
 // Verify that the authenticated user has ADMIN role
@@ -54,6 +54,59 @@ export const approveEvent = async (
     event.moderation.reviewedBy =
         new mongoose.Types.ObjectId(adminId);
     event.moderation.reviewedAt = new Date();
+
+    await event.save();
+
+    return event;
+};
+
+export const rejectEvent = async (
+    eventId: string,
+    adminId: string,
+    reason: ModerationRejectionReason,
+    comment?: string
+) => {
+
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+        throw new AppError(
+            "Invalid event id",
+            400,
+            "INVALID_ID"
+        );
+    }
+
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+        throw new AppError(
+            "Event not found",
+            404,
+            "NOT_FOUND"
+        );
+    }
+
+    if (
+        event.moderation.status ===
+        MODERATION_STATUS.REJECTED
+    ) {
+        throw new AppError(
+            "Event already rejected",
+            409,
+            "EVENT_ALREADY_REJECTED"
+        );
+    }
+
+    event.moderation.status =
+        MODERATION_STATUS.REJECTED;
+
+    event.moderation.reviewedBy =
+        new mongoose.Types.ObjectId(adminId);
+
+    event.moderation.reviewedAt =
+        new Date();
+
+    event.moderation.rejectionReason = reason;
+    event.moderation.rejectionComment = comment;
 
     await event.save();
 
