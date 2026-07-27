@@ -4,6 +4,11 @@ import * as adminController from "./admin.controller";
 const router = Router();
 
 router.get(
+    "/events",
+    adminController.getEvents
+);
+
+router.get(
     "/events/pending",
     adminController.getPendingEvents
 );
@@ -17,5 +22,6 @@ router.patch(
     "/events/:id/reject",
     adminController.rejectEvent
 );
+
 
 export default router;

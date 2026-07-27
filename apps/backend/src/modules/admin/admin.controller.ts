@@ -2,6 +2,22 @@ import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
 import * as adminService from "./admin.service";
 
+export const getEvents = catchAsync(
+    async (req: Request, res: Response) => {
+
+        const status =
+            req.query.status as string | undefined;
+
+        const events =
+            await adminService.getEvents(status);
+
+        res.json({
+            success: true,
+            data: events,
+        });
+    }
+);
+
 export const getPendingEvents = catchAsync(
     async (_req: Request, res: Response) => {
         const events = await adminService.getPendingEvents();
@@ -60,3 +76,4 @@ export const rejectEvent = catchAsync(
         });
     }
 );
+
