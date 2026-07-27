@@ -2,6 +2,8 @@ import { Event } from "../events/event.model";
 import { User } from "../users/user.model";
 import { Business } from "../business/business.model";
 import { calculateScore } from "./utils/calculateScore";
+import { MODERATION_STATUS } from "../../shared/constants/moderation";
+
 
 interface DiscoverParams {
   lat?: number;
@@ -26,6 +28,7 @@ const buildEventFilters = ({
 }: any) => {
   const filters: any = {
     status: "active",
+    "moderation.status": MODERATION_STATUS.APPROVED,
     $and: [],
   };
 
