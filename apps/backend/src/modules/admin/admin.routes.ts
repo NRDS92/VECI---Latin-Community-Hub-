@@ -7,5 +7,9 @@ router.get(
     "/events/pending",
     adminController.getPendingEvents
 );
+router.patch(
+    "/events/:id/approve",
+    adminController.approveEvent
+);
 
 export default router;
