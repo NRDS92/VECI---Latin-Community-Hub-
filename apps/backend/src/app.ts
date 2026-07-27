@@ -8,7 +8,7 @@ import usersRoutes from "./modules/users/user.routes";
 import { errorMiddleware } from "./middleware/error.middleware";
 import businessRoutes from "./modules/business/business.routes";
 import uploadRoutes from "./modules/upload/upload.routes";
-import adminRoutes from "../src/modules/admin/admin.routes";
+import adminRoutes from "./modules/admin/admin.routes";
 
 const app: Express = express();
 
