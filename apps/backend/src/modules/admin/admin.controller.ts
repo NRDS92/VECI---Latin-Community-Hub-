@@ -19,10 +19,8 @@ export const approveEvent = catchAsync(
         res: Response
     ) => {
 
-        // TODO:
-        // Replace this with authenticated admin user once
-        // the authentication and roles system is implemented.
-        const adminId = "TU_OBJECT_ID";
+        // TODO: Replace with authenticated admin user
+        const adminId = "6a5473977311303a364400c1";
 
         const event = await adminService.approveEvent(
             req.params.id,
