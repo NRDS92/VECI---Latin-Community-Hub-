@@ -27,6 +27,7 @@ app.use("/api/v1/discover", discoverRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/business", businessRoutes);
 app.use("/api/v1/upload", uploadRoutes);
+app.use("/api/v1/admin", uploadRoutes);
 
 /*Health check endpoint*/
 app.get("/", (req: Request, res: Response) => {

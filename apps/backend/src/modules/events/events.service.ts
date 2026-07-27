@@ -38,7 +38,9 @@ export const createEvent = async (
 
         dateStart: data.dateStart,
         dateEnd: data.dateEnd,
-
+        moderation: {
+            status: "PENDING",
+        },
         createdBy: userId,
         businessId: data.businessId
         ? new mongoose.Types.ObjectId(data.businessId)
