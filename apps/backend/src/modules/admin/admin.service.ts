@@ -108,6 +108,13 @@ export const rejectEvent = async (
     event.moderation.rejectionReason = reason;
     event.moderation.rejectionComment = comment;
 
+    console.log("===== BEFORE SAVE =====");
+    console.log({
+        reason,
+        comment,
+        moderation: event.moderation,
+    });
+
     await event.save();
 
     return event;
