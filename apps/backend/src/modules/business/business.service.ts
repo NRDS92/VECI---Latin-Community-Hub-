@@ -2,11 +2,28 @@ import mongoose from "mongoose";
 import { Business } from "./business.model";
 import { CreateBusinessInput } from "./business.validation";
 import { AppError } from "../../shared/errors/AppError";
+import { User } from "../users/user.model";
 
 export const createBusiness = async (
     data: CreateBusinessInput,
     ownerId: string
 ) => {
+
+    const user = await User.findById(ownerId);
+
+    if (!user) {
+        throw new AppError("User not found", 404, "USER_NOT_FOUND");
+    }
+    const totalBusinesses = await Business.countDocuments({
+        owner: ownerId,
+    });
+    if (totalBusinesses >= user.subscription.maxBusinesses) {
+    throw new AppError(
+        "You have reached the maximum number of businesses allowed for your plan.",
+        409,
+        "BUSINESS_LIMIT_REACHED"
+    );
+}
     // ✅ NORMALIZACIÓN PRO
     const normalizedCategory = data.category.toLowerCase();
 
