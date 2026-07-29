@@ -95,7 +95,7 @@ export interface IBusiness extends Document {
   updatedAt: Date;
 }
 
-const BusinessSchema: Schema = new Schema(
+const BusinessSchema = new Schema<IBusiness>(
   {
     name: { type: String, required: true },
     description: String,
@@ -212,7 +212,12 @@ const BusinessSchema: Schema = new Schema(
       default: "active",
     },
 
-    slug: { type: String },
+      slug: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true,
+    },
 
     visibilityScore: { type: Number, default: 0 },
   },

@@ -4,7 +4,7 @@ import { CreateBusinessInput } from "./business.validation";
 import { AppError } from "../../shared/errors/AppError";
 import { User } from "../users/user.model";
 import { SUBSCRIPTION_CONFIG } from "../../shared/config/subscription.config";
-import { generateSlug } from "../../shared/utils/slug";
+import { generateUniqueBusinessSlug } from "./business.slug";
 
 export const createBusiness = async (
     data: CreateBusinessInput,
@@ -34,7 +34,7 @@ export const createBusiness = async (
             "BUSINESS_LIMIT_REACHED"
         );
     }
-    const slug = generateSlug(data.name);
+    const slug = await generateUniqueBusinessSlug(data.name);
     // ✅ NORMALIZACIÓN PRO
     const normalizedCategory = data.category.toLowerCase();
     const normalizedSubCategory = data.subCategory
