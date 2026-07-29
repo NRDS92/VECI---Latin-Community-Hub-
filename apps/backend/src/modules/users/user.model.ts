@@ -8,23 +8,49 @@ export const AUTH_PROVIDERS = {
 export type AuthProvider =
   (typeof AUTH_PROVIDERS)[keyof typeof AUTH_PROVIDERS];
 
+// -------------------------
+// Subscription Plans
+// -------------------------
+
+export const SUBSCRIPTION_PLANS = {
+  FREE: "FREE",
+  BUSINESS: "BUSINESS",
+  BUSINESS_PRO: "BUSINESS_PRO",
+  ENTERPRISE: "ENTERPRISE",
+} as const;
+
+export type SubscriptionPlan =
+  (typeof SUBSCRIPTION_PLANS)[keyof typeof SUBSCRIPTION_PLANS];
+
 export interface IUser extends Document {
   name: string;
   email: string;
   passwordHash?: string;
   provider: AuthProvider;
   providerId?: string;
+
   role: "user" | "admin";
+
+  subscription: {
+      plan: SubscriptionPlan;
+      maxBusinesses: number;
+  };
+
   cityId?: string;
   originCountry?: string;
   profileImage?: string;
   bio?: string;
+
   favorites: mongoose.Types.ObjectId[];
+
   createdAt: Date;
   updatedAt: Date;
+
   isVerified: boolean;
   verificationToken?: string;
+
   onboardingCompleted: boolean;
+
   passwordResetToken?: string;
   passwordResetExpires?: Date;
 }
@@ -67,6 +93,20 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+
+    subscription: {
+      plan: {
+        type: String,
+        enum: Object.values(SUBSCRIPTION_PLANS),
+        default: SUBSCRIPTION_PLANS.FREE,
+      },
+
+      maxBusinesses: {
+        type: Number,
+        default: 1,
+        min: 1,
+      },
     },
 
     cityId: {
@@ -113,6 +153,7 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+
     passwordResetToken: {
       type: String,
       default: null,
