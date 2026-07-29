@@ -33,7 +33,6 @@ export interface IUser extends Document {
 
   subscription: {
       plan: SubscriptionPlan;
-      maxBusinesses: number;
   };
 
   cityId?: string;
