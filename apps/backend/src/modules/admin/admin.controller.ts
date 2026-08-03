@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../utils/catchAsync";
-import * as adminService from "./admin.service";
+import * as eventsAdminService from "./events/events.admin.service";
 
 export const getEvents = catchAsync(
     async (req: Request, res: Response) => {
@@ -9,7 +9,7 @@ export const getEvents = catchAsync(
             req.query.status as string | undefined;
 
         const events =
-            await adminService.getEvents(status);
+            await eventsAdminService.getAdminEvents(status);
 
         res.json({
             success: true,
@@ -20,7 +20,7 @@ export const getEvents = catchAsync(
 
 export const getPendingEvents = catchAsync(
     async (_req: Request, res: Response) => {
-        const events = await adminService.getPendingEvents();
+        const events = await eventsAdminService.getPendingAdminEvents();
 
         res.json({
             success: true,
@@ -38,7 +38,7 @@ export const approveEvent = catchAsync(
         // TODO: Replace with authenticated admin user
         const adminId = "6a5473977311303a364400c1";
 
-        const event = await adminService.approveEvent(
+        const event = await eventsAdminService.approveEvent(
             req.params.id,
             adminId
         );
@@ -61,7 +61,7 @@ export const rejectEvent = catchAsync(
             "6a5473977311303a364400c1";
 
         const event =
-            await adminService.rejectEvent(
+            await eventsAdminService.rejectEvent(
                 req.params.id,
                 adminId,
                 req.body.reason,

@@ -4,6 +4,7 @@ import { CreateEventInput } from "./events.validation";
 import { AppError } from "../../shared/errors/AppError";
 import { EventDocument } from "./event.model";
 import { MODERATION_STATUS } from "../../shared/constants/moderation";
+import { approvedModerationFilter } from "../../shared/moderation/moderation.filter";
 
 
 // 🚀 CREATE EVENT
@@ -73,6 +74,7 @@ export const getNearbyEvents = async (
 
     const query: Record<string, any> = {
         status: "active",
+        ...approvedModerationFilter,
         location: {
             $near: {
                 $geometry: {
@@ -95,7 +97,10 @@ export const getNearbyEvents = async (
 
 // 🚀 GET ALL
 export const getEvents = async () => {
-    return Event.find({ status: "active" }).sort({ dateStart: 1 });
+    return Event.find({
+        status: "active",
+        ...approvedModerationFilter,
+    }).sort({ dateStart: 1 });
 };
 
 // 🚀 GET BY ID
@@ -137,6 +142,7 @@ export const getEventsByBusiness = async (businessId: string) => {
         businessId: new mongoose.Types.ObjectId(businessId),
         eventType: "official",
         status: "active",
+        ...approvedModerationFilter,
     }).sort({ dateStart: 1 });
 };
 

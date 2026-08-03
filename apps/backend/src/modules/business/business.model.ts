@@ -1,4 +1,10 @@
 import mongoose, { Schema, Document } from "mongoose";
+import {
+    ModerationStatus,
+    ModerationRejectionReason,
+} from "../../shared/constants/moderation";
+
+import { ModerationSchema } from "../../shared/moderation/moderation.schema";
 
 export interface IBusiness extends Document {
   name: string;
@@ -82,6 +88,13 @@ export interface IBusiness extends Document {
   verification: {
     status: "unverified" | "pending" | "verified" | "rejected";
     verifiedAt?: Date;
+  };
+  moderation: {
+    status: ModerationStatus;
+    reviewedBy?: mongoose.Types.ObjectId;
+    reviewedAt?: Date;
+    rejectionReason?: ModerationRejectionReason;
+    rejectionComment?: string;
   };
 
   isFeatured: boolean;
@@ -204,6 +217,10 @@ const BusinessSchema = new Schema<IBusiness>(
         default: "unverified",
       },
       verifiedAt: Date,
+    },
+    moderation: {
+        type: ModerationSchema,
+        default: () => ({}),
     },
     isFeatured: { type: Boolean, default: false },
     status: {
