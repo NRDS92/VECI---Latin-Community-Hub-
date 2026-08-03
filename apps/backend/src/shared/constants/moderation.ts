@@ -19,3 +19,11 @@ export const MODERATION_REJECTION_REASON = {
 
 export type ModerationRejectionReason =
     (typeof MODERATION_REJECTION_REASON)[keyof typeof MODERATION_REJECTION_REASON];
+
+    export const MODERATION_REJECTION_REASONS =
+    Object.values(
+        MODERATION_REJECTION_REASON
+    ) as [
+        ModerationRejectionReason,
+        ...ModerationRejectionReason[]
+    ];

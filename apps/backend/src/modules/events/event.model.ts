@@ -1,10 +1,9 @@
 import mongoose, { Schema, Document, HydratedDocument } from "mongoose";
 import {
-    MODERATION_STATUS,
-    MODERATION_REJECTION_REASON,
     ModerationStatus,
     ModerationRejectionReason,
 } from "../../shared/constants/moderation";
+import { ModerationSchema } from "../../shared/moderation/moderation.schema";
 
 export interface IEvent extends Document {
     title: string;
@@ -159,21 +158,8 @@ const EventSchema = new Schema<IEvent>(
             default: "active",
         },
         moderation: {
-            status: {
-                type: String,
-                enum: Object.values(MODERATION_STATUS),
-                default: MODERATION_STATUS.PENDING,
-            },
-            reviewedBy: {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-            },
-            reviewedAt: Date,
-            rejectionReason: {
-                type: String,
-                enum: Object.values(MODERATION_REJECTION_REASON),
-            },
-            rejectionComment: String,
+            type: ModerationSchema,
+            default: () => ({}),
         },
     },
     { timestamps: true }
