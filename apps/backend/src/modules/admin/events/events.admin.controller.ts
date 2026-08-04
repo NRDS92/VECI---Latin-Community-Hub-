@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { catchAsync } from "../../utils/catchAsync";
-import * as eventsAdminService from "./events/events.admin.service";
+import { catchAsync } from "../../../utils/catchAsync";
+import * as eventsAdminService from "../events/events.admin.service";
 
 export const getEvents = catchAsync(
     async (req: Request, res: Response) => {
@@ -76,4 +76,3 @@ export const rejectEvent = catchAsync(
         });
     }
 );
-
