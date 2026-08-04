@@ -128,6 +128,42 @@ export interface RecentActivityAnalytics {
 
 }
 
+
+
+// --------------------------------------
+// TRENDS
+// --------------------------------------
+
+export interface TrendPoint {
+
+    period: string;
+
+    count: number;
+
+}
+
+export interface TrendAnalytics {
+
+    daily: TrendPoint[];
+
+    weekly: TrendPoint[];
+
+    monthly: TrendPoint[];
+
+}
+
+export interface TrendsAnalytics {
+
+    users: TrendAnalytics;
+
+    events: TrendAnalytics;
+
+    businesses: TrendAnalytics;
+
+}
+
+
+
 // --------------------------------------
 // DASHBOARD
 // --------------------------------------
@@ -145,69 +181,5 @@ export interface DashboardAnalytics {
     recentActivity: RecentActivityAnalytics;
 
     trends: TrendsAnalytics;
-
-}
-
-// --------------------------------------
-// TRENDS
-// --------------------------------------
-
-export interface TrendPoint {
-
-    period: string;
-
-    count: number;
-
-}
-
-export interface TrendAnalytics {
-
-    daily: TrendPoint[];
-
-    weekly: TrendPoint[];
-
-    monthly: TrendPoint[];
-
-}
-
-export interface TrendsAnalytics {
-
-    users: TrendAnalytics;
-
-    events: TrendAnalytics;
-
-    businesses: TrendAnalytics;
-
-}
-
-// --------------------------------------
-// TRENDS
-// --------------------------------------
-
-export interface TrendPoint {
-
-    period: string;
-
-    count: number;
-
-}
-
-export interface TrendAnalytics {
-
-    daily: TrendPoint[];
-
-    weekly: TrendPoint[];
-
-    monthly: TrendPoint[];
-
-}
-
-export interface TrendsAnalytics {
-
-    users: TrendAnalytics;
-
-    events: TrendAnalytics;
-
-    businesses: TrendAnalytics;
 
 }

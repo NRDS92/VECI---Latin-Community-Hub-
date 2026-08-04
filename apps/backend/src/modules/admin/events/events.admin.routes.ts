@@ -1,26 +1,25 @@
-
 import { Router } from "express";
-import * as adminController from "../events/events.admin.controller";
+import * as adminController from "./events.admin.controller";
 
 const router = Router();
 
 router.get(
-    "/events",
+    "/",
     adminController.getEvents
 );
 
 router.get(
-    "/events/pending",
+    "/pending",
     adminController.getPendingEvents
 );
 
 router.patch(
-    "/events/:id/approve",
+    "/:id/approve",
     adminController.approveEvent
 );
 
 router.patch(
-    "/events/:id/reject",
+    "/:id/reject",
     adminController.rejectEvent
 );
 
