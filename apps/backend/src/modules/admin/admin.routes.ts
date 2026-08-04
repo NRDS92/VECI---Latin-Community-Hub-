@@ -1,49 +1,18 @@
 import { Router } from "express";
-import * as adminController from "./admin.controller";
-import * as businessController from "./business/business.admin.controller";
+
+import eventsRoutes from "./events/events.admin.routes";
+import businessRoutes from "./business/business.admin.routes";
+import usersRoutes from "./users/users.admin.routes";
+import dashboardRoutes from "./dashboard/dashboard.routes";
 
 const router = Router();
 
-router.get(
-    "/events",
-    adminController.getEvents
-);
+router.use("/events", eventsRoutes);
 
-router.get(
-    "/events/pending",
-    adminController.getPendingEvents
-);
+router.use("/businesses", businessRoutes);
 
-router.patch(
-    "/events/:id/approve",
-    adminController.approveEvent
-);
+router.use("/users", usersRoutes);
 
-router.patch(
-    "/events/:id/reject",
-    adminController.rejectEvent
-);
-
-
-router.get(
-    "/businesses",
-    businessController.getBusinesses
-);
-
-router.get(
-    "/businesses/pending",
-    businessController.getPendingBusinesses
-);
-
-router.patch(
-    "/businesses/:id/approve",
-    businessController.approveBusiness
-);
-
-router.patch(
-    "/businesses/:id/reject",
-    businessController.rejectBusiness
-);
-
+router.use("/dashboard", dashboardRoutes);
 
 export default router;
