@@ -3,6 +3,23 @@ import * as authService from "./auth.service";
 import { catchAsync } from "../../utils/catchAsync";
 
 
+
+export const getMe = catchAsync(
+    async (req: any, res: Response) => {
+
+        const user = await authService.getCurrentUser(
+            req.user.id
+        );
+
+        res.json({
+            success: true,
+            data: user,
+        });
+
+    }
+);
+
+
 export const register = catchAsync(async (req: Request, res: Response) => {
   const user = await authService.registerUser(req.body);
 

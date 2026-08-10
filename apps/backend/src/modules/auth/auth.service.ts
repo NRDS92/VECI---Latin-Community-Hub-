@@ -4,6 +4,8 @@ import { RegisterInput, LoginInput } from "./auth.types";
 import { authenticateGoogleUser } from "./providers/google.provider";
 import { generateJWT } from "../auth/utils/jwt";
 import { AppError } from "../../shared/errors/AppError";
+import { sanitizeUser } from "../../shared/utils/sanitize-user";
+
 import {
     generateVerificationToken,
     generatePasswordResetToken,
@@ -15,18 +17,28 @@ import {
 } from "./utils/email";
 
 
-const sanitizeUser = (user: any) => ({
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    provider: user.provider,
-    cityId: user.cityId,
-    originCountry: user.originCountry,
-    profileImage: user.profileImage,
-    favorites: user.favorites,
-    bio: user.bio,
-    onboardingCompleted: user.onboardingCompleted,
-});
+
+
+
+
+export const getCurrentUser = async (
+    userId: string
+) => {
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new AppError(
+            "User not found.",
+            404,
+            "USER_NOT_FOUND"
+        );
+    }
+
+    return sanitizeUser(user);
+
+};
+
 
 export const registerUser = async (data: RegisterInput) => {
     const { name, email, password, cityId } = data;

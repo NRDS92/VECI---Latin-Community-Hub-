@@ -6,6 +6,11 @@ import { authMiddleware } from "../../middleware/auth.middleware";
 
 const router = Router();
 
+router.get(
+    "/me",
+    authMiddleware,
+    authController.getMe
+);
 router.post("/register", authController.register);
 router.post("/login", authController.login);
 router.post("/google", authController.googleLogin);
