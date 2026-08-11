@@ -11,7 +11,10 @@ export const errorMiddleware = (
 
   // 🔥 LOG
   if (isDev) {
-    console.error("🔥 ERROR:", err);
+    console.error("🔥 NAME:", err.name);
+    console.error("🔥 MESSAGE:", err.message);
+    console.error("🔥 STACK:");
+    console.error(err.stack);
   } else {
     console.error("🔥 ERROR:", {
       message: err.message,

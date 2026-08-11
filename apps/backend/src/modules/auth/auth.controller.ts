@@ -6,11 +6,9 @@ import { catchAsync } from "../../utils/catchAsync";
 
 export const getMe = catchAsync(
     async (req: any, res: Response) => {
-
         const user = await authService.getCurrentUser(
             req.user.id
         );
-
         res.json({
             success: true,
             data: user,

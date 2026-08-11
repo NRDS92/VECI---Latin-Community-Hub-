@@ -10,8 +10,10 @@ export const requireAdmin = (
 
     const user = (req as any).user;
 
-    if (!user) {
 
+
+    if (!user) {
+        console.log("✅ requireAdmin",user);
         return next(
             new AppError(
                 "Authentication required.",
