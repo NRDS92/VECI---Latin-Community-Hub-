@@ -17,9 +17,12 @@ router.use(authMiddleware);
 router.use(requireAdmin);
 
 // Modules
+router.use("/events", eventsRoutes);
+
+router.use("/businesses", businessRoutes);
+
+router.use("/users", usersRoutes);
+
 router.use("/dashboard", dashboardRoutes);
-router.use("/", eventsRoutes);
-router.use("/", businessRoutes);
-router.use("/", usersRoutes);
 
 export default router;

@@ -21,20 +21,16 @@ import { findDocumentOrFail } from "../../../shared/moderation/moderation.docume
 export const getAdminEvents = async (
     status?: string
 ) => {
-
     const filters: Record<string, unknown> = {};
-
     if (status) {
         filters["moderation.status"] = status;
     }
-
     return Event.find(filters)
         .populate("createdBy", "name profileImage")
         .populate("businessId", "name images")
         .sort({
             createdAt: -1,
         });
-
 };
 
 export const getPendingAdminEvents = async () => {
