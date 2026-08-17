@@ -12,6 +12,8 @@ const user_routes_1 = __importDefault(require("./modules/users/user.routes"));
 const error_middleware_1 = require("./middleware/error.middleware");
 const business_routes_1 = __importDefault(require("./modules/business/business.routes"));
 const upload_routes_1 = __importDefault(require("./modules/upload/upload.routes"));
+const admin_routes_1 = __importDefault(require("./modules/admin/admin.routes"));
+const sitemap_routes_1 = __importDefault(require("./shared/public-content/sitemap/sitemap.routes"));
 const app = (0, express_1.default)();
 /*Middleware*/
 // permite peticiones desde otros dominios
@@ -24,6 +26,8 @@ app.use("/api/v1/discover", discover_routes_1.default);
 app.use("/api/v1/users", user_routes_1.default);
 app.use("/api/v1/business", business_routes_1.default);
 app.use("/api/v1/upload", upload_routes_1.default);
+app.use("/api/v1/admin", admin_routes_1.default);
+app.use("/api/v1/public", sitemap_routes_1.default);
 /*Health check endpoint*/
 app.get("/", (req, res) => {
     res.json({

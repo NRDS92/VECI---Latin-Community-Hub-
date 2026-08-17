@@ -30,14 +30,15 @@ export const approveEvent = catchAsync(
     ) => {
         // TODO: Replace with authenticated admin user
         const adminId = "6a5473977311303a364400c1";
-        const event = await eventsAdminService.approveEvent(
-            req.params.id,
-            adminId
-        );
+        const result =
+            await eventsAdminService.approveEvent(
+                req.params.id,
+                adminId
+            );
         res.json({
             success: true,
-            message: "Event approved successfully.",
-            data: event,
+            message: "Event approved and published successfully.",
+            data: result,
         });
     }
 );
