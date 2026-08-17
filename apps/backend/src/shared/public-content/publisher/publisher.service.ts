@@ -43,13 +43,83 @@ export const publishContent = async (
     data: PublishContentInput
 ): Promise<PublicationDocument> => {
 
+    console.log(
+        "📢 Publishing content:",
+        {
+            entityType:
+                data.entityType,
+
+            entityId:
+                data.entityId,
+
+            title:
+                data.title,
+        }
+    );
+
+
+    /*
+     * Create publication.
+     */
     const publication =
         await createPublication(
             data
         );
 
 
-    return publish(
-        publication._id.toString()
+    console.log(
+        "📝 Publication created:",
+        {
+            id:
+                publication._id.toString(),
+
+            entityType:
+                publication.entityType,
+
+            entityId:
+                publication.entityId,
+
+            slug:
+                publication.slug,
+
+            status:
+                publication.status,
+        }
     );
+
+
+    /*
+     * Publish publication.
+     */
+    const publishedPublication =
+        await publish(
+            publication._id.toString()
+        );
+
+
+    console.log(
+        "🚀 Publication published:",
+        {
+            id:
+                publishedPublication._id.toString(),
+
+            entityType:
+                publishedPublication.entityType,
+
+            entityId:
+                publishedPublication.entityId,
+
+            slug:
+                publishedPublication.slug,
+
+            status:
+                publishedPublication.status,
+
+            publishedAt:
+                publishedPublication.publishedAt,
+        }
+    );
+
+
+    return publishedPublication;
 };

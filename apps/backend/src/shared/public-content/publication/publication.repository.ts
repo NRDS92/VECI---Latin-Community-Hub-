@@ -137,11 +137,54 @@ export const findPublished = async (
         safeLimit;
 
 
-    return Publication
-        .find(filters)
-        .sort({
-            updatedAt: -1,
-        })
-        .skip(skip)
-        .limit(safeLimit);
+    console.log(
+        "🔎 Sitemap query:",
+        filters
+    );
+
+
+    const publications =
+        await Publication
+            .find(filters)
+            .sort({
+                updatedAt: -1,
+            })
+            .skip(skip)
+            .limit(safeLimit);
+
+
+    console.log(
+        "🗺️ Published publications found:",
+        publications.length
+    );
+
+
+    if (publications.length > 0) {
+
+        console.log(
+            "📄 Publications:",
+            publications.map(
+                (publication) => ({
+                    id:
+                        publication._id.toString(),
+
+                    entityType:
+                        publication.entityType,
+
+                    entityId:
+                        publication.entityId,
+
+                    slug:
+                        publication.slug,
+
+                    status:
+                        publication.status,
+                })
+            )
+        );
+
+    }
+
+
+    return publications;
 };
