@@ -10,6 +10,8 @@ import businessRoutes from "./modules/business/business.routes";
 import uploadRoutes from "./modules/upload/upload.routes";
 import adminRoutes from "./modules/admin/admin.routes";
 import sitemapRoutes from "./shared/public-content/sitemap/sitemap.routes";
+import publicContentRoutes
+    from "./shared/public-content/resolver/public-content.routes";
 
 const app: Express = express();
 
@@ -34,6 +36,11 @@ app.use("/api/v1/admin", adminRoutes);
 app.use(
     "/api/v1/public",
     sitemapRoutes
+);
+
+app.use(
+    "/api/v1/public/content",
+    publicContentRoutes
 );
 
 /*Health check endpoint*/
