@@ -52,51 +52,168 @@ export const approveEvent = async (
     eventId: string,
     adminId: string
 ) => {
+
+    console.log(
+        "🟡 APPROVE EVENT START",
+        {
+            eventId,
+            adminId,
+        }
+    );
+
+
     const event =
         await findDocumentOrFail(
             Event,
             eventId,
             "Event"
         );
+
+
+    console.log(
+        "🟢 EVENT FOUND",
+        {
+            id:
+                event._id.toString(),
+
+            title:
+                event.title,
+
+            moderationStatus:
+                event.moderation.status,
+        }
+    );
+
+
     if (
         event.moderation.status ===
         MODERATION_STATUS.APPROVED
     ) {
+
         throw new AppError(
             "Event already approved",
             409,
             "EVENT_ALREADY_APPROVED"
         );
+
     }
+
+
     /*
-     * First approve the domain entity.
+     * Approve the event.
      */
     approveModeration(
         event,
         adminId
     );
-    await event.save();
+
+
+    console.log(
+        "🟠 EVENT MODERATION UPDATED",
+        {
+            status:
+                event.moderation.status,
+        }
+    );
+
+
     /*
-     * Once moderation succeeds,
-     * create and publish the public content.
+     * Persist approval.
      */
-    const publication =
-        await publishContent({
+    await event.save();
+
+
+    console.log(
+        "🟢 EVENT SAVED AS APPROVED",
+        {
+            id:
+                event._id.toString(),
+
+            status:
+                event.moderation.status,
+        }
+    );
+
+
+    /*
+     * Create and publish public content.
+     */
+    console.log(
+        "📢 CALLING PUBLISH CONTENT",
+        {
             entityType:
                 PUBLIC_CONTENT_TYPES.EVENT,
+
             entityId:
                 event._id.toString(),
+
             title:
                 event.title,
-            seoTitle:
-                `${event.title} | VECI`,
-            seoDescription:
-                event.description,
-        });
-    return {
-        event,
-        publication,
-    };
+        }
+    );
+
+
+    try {
+
+        const publication =
+            await publishContent({
+
+                entityType:
+                    PUBLIC_CONTENT_TYPES.EVENT,
+
+                entityId:
+                    event._id.toString(),
+
+                title:
+                    event.title,
+
+                seoTitle:
+                    `${event.title} | VECI`,
+
+                seoDescription:
+                    event.description,
+
+            });
+
+
+        console.log(
+            "🚀 EVENT PUBLICATION CREATED",
+            {
+                publicationId:
+                    publication._id.toString(),
+
+                entityType:
+                    publication.entityType,
+
+                entityId:
+                    publication.entityId,
+
+                slug:
+                    publication.slug,
+
+                status:
+                    publication.status,
+
+                publishedAt:
+                    publication.publishedAt,
+            }
+        );
+
+
+        return {
+            event,
+            publication,
+        };
+
+    } catch (error) {
+
+        console.error(
+            "🔴 PUBLISH CONTENT FAILED",
+            error
+        );
+
+        throw error;
+    }
 };
 
 export const rejectEvent = async (
