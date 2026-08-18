@@ -12,6 +12,9 @@ import adminRoutes from "./modules/admin/admin.routes";
 import sitemapRoutes from "./shared/public-content/sitemap/sitemap.routes";
 import publicContentRoutes
     from "./shared/public-content/resolver/public-content.routes";
+import publicContentDiscoveryRoutes
+    from "./shared/public-content/discovery/public-content.discovery.routes";
+
 
 const app: Express = express();
 
@@ -41,6 +44,11 @@ app.use(
 app.use(
     "/api/v1/public/content",
     publicContentRoutes
+);
+
+app.use(
+    "/api/v1/public",
+    publicContentDiscoveryRoutes
 );
 
 /*Health check endpoint*/
