@@ -1,4 +1,8 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, {
+  Schema,
+  Document,
+  HydratedDocument,
+} from "mongoose";
 import {
     ModerationStatus,
     ModerationRejectionReason,
@@ -245,3 +249,6 @@ export const Business = mongoose.model<IBusiness>(
   "Business",
   BusinessSchema
 );
+
+export type BusinessDocument =
+  HydratedDocument<IBusiness>;

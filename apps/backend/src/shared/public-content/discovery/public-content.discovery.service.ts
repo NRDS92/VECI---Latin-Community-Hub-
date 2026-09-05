@@ -1,4 +1,12 @@
 import {
+    discover,
+} from "../../discovery/discovery.service";
+
+import {
+    DiscoveryRequest,
+} from "../../discovery/discovery.types";
+
+import {
     Publication,
 } from "../publication/publication.model";
 
@@ -11,12 +19,12 @@ import {
 } from "../constants/public-content.types";
 
 import {
-    Event,
-} from "../../../modules/events/event.model";
-
-import {
     PublicEventDTO,
 } from "../types/public-content.dto";
+
+import type {
+    EventDocument,
+} from "../../../modules/events/event.model";
 
 
 export interface RelatedEventsOptions {
@@ -28,17 +36,20 @@ export interface RelatedEventsOptions {
     excludeEntityId?: string;
 
     limit?: number;
+
 }
 
 
 /**
- * Convert an Event + Publication into
- * the public representation consumed
- * by frontend applications.
+ * Convert a discovered Event into
+ * its public representation.
+ *
+ * The Event itself does not own the
+ * public slug. The Publication does.
  */
 const toPublicEventDTO = (
-    event: any,
-    publication: any
+    event: EventDocument,
+    slug: string
 ): PublicEventDTO => {
 
     return {
@@ -46,8 +57,7 @@ const toPublicEventDTO = (
         id:
             event._id.toString(),
 
-        slug:
-            publication.slug,
+        slug,
 
         title:
             event.title,
@@ -77,14 +87,27 @@ const toPublicEventDTO = (
             event.images?.[0],
 
     };
+
 };
 
 
 /**
- * Get related public events.
+ * Get related public Events.
  *
- * Only PUBLISHED publications are considered
- * public content.
+ * IMPORTANT:
+ *
+ * This function does NOT implement
+ * its own discoverability rules.
+ *
+ * Discovery is delegated to the
+ * shared Discovery Engine.
+ *
+ * The public-content layer is only
+ * responsible for:
+ *
+ * - requesting public Events
+ * - resolving their public slugs
+ * - converting them into Public DTOs
  */
 export const getRelatedEvents = async (
     options: RelatedEventsOptions = {}
@@ -102,6 +125,10 @@ export const getRelatedEvents = async (
     } = options;
 
 
+    /*
+     * Protect the endpoint from
+     * unreasonable limits.
+     */
     const safeLimit =
         Math.min(
             Math.max(
@@ -113,28 +140,97 @@ export const getRelatedEvents = async (
 
 
     /*
-     * Find published Event publications.
+     * Build the shared Discovery request.
+     *
+     * Public Discovery uses the same
+     * discoverability rules as every
+     * other consumer of Discovery.
      */
-    const publications =
-        await Publication.find({
+    const request: DiscoveryRequest = {
 
-            entityType:
-                PUBLIC_CONTENT_TYPES.EVENT,
+        query: {
 
-            status:
-                PUBLICATION_STATUS.PUBLISHED,
+            city:
+                cityId,
 
-        })
-            .sort({
-                publishedAt: -1,
-            })
-            .limit(
-                safeLimit * 5
+            category,
+
+            contentTypes: [
+                "event",
+            ],
+
+            /*
+             * Related events should be
+             * upcoming by default.
+             */
+            date: {
+                type:
+                    "upcoming",
+            },
+
+        },
+
+
+        /*
+         * Public Discovery has no user
+         * personalization.
+         */
+        context: {},
+
+
+        options: {
+
+            visibility:
+                "public",
+
+            ranking:
+                "public",
+
+            limit:
+                safeLimit,
+
+            excludeEntityIds:
+                excludeEntityId
+                    ? [
+                        excludeEntityId,
+                    ]
+                    : undefined,
+
+        },
+
+    };
+
+
+    /*
+     * Execute the shared Discovery Engine.
+     */
+    const result =
+        await discover(
+            request
+        );
+
+
+    /*
+     * Discovery returns normalized
+     * domain entities.
+     *
+     * We only requested Events above,
+     * therefore every item here is an Event.
+     */
+    const events =
+        result.items
+            .filter(
+                item =>
+                    item.type === "event"
+            )
+            .map(
+                item =>
+                    item.entity as EventDocument
             );
 
 
     if (
-        publications.length === 0
+        events.length === 0
     ) {
 
         return [];
@@ -143,8 +239,48 @@ export const getRelatedEvents = async (
 
 
     /*
-     * Create a map so we can recover
-     * the public slug for each Event.
+     * Resolve the public Publication
+     * for the discovered Events.
+     *
+     * Discovery already guaranteed that
+     * these Events have PUBLISHED
+     * representations.
+     *
+     * We are only retrieving the slug
+     * needed by the public DTO.
+     */
+    const eventIds =
+        events.map(
+            event =>
+                event._id.toString()
+        );
+
+
+    const publications =
+        await Publication.find({
+
+            entityType:
+                PUBLIC_CONTENT_TYPES.EVENT,
+
+            entityId: {
+                $in:
+                    eventIds,
+            },
+
+            status:
+                PUBLICATION_STATUS.PUBLISHED,
+
+        })
+            .select(
+                "entityId slug"
+            )
+            .lean();
+
+
+    /*
+     * Create a fast lookup map:
+     *
+     * Event ID → public slug
      */
     const publicationMap =
         new Map(
@@ -153,109 +289,49 @@ export const getRelatedEvents = async (
 
                     publication.entityId,
 
-                    publication,
+                    publication.slug,
 
                 ]
             )
         );
 
 
-    const entityIds =
-        publications.map(
-            publication =>
-                publication.entityId
-        );
-
-
     /*
-     * Event filters.
+     * Convert Events into their
+     * public representation.
      */
-    const filters: Record<
-        string,
-        unknown
-    > = {
+    return events
+        .map(
+            event => {
 
-        _id: {
-            $in: entityIds,
-        },
-
-        status:
-            "active",
-
-    };
+                const slug =
+                    publicationMap.get(
+                        event._id.toString()
+                    );
 
 
-    if (cityId) {
+                /*
+                 * This should never happen because
+                 * shared Discovery only returns
+                 * published entities.
+                 *
+                 * We still protect the public
+                 * boundary.
+                 */
+                if (!slug) {
 
-        filters.cityId =
-            cityId;
+                    return null;
 
-    }
-
-
-    if (category) {
-
-        filters.category =
-            category;
-
-    }
-
-
-    if (excludeEntityId) {
-
-        filters._id = {
-
-            $in:
-                entityIds,
-
-            $ne:
-                excludeEntityId,
-
-        };
-
-    }
+                }
 
 
-    const events =
-        await Event.find(
-            filters
-        )
-            .sort({
-                dateStart: 1,
-            })
-            .limit(
-                safeLimit
-            );
-
-
-    return events.map(
-        event => {
-
-            const publication =
-                publicationMap.get(
-                    event._id.toString()
+                return toPublicEventDTO(
+                    event,
+                    slug
                 );
 
-
-            /*
-             * This should never happen because
-             * entityIds originate from publications,
-             * but we protect the boundary anyway.
-             */
-            if (!publication) {
-
-                return null;
-
             }
-
-
-            return toPublicEventDTO(
-                event,
-                publication
-            );
-
-        }
-    )
+        )
         .filter(
             (
                 event

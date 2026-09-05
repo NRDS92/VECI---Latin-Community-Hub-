@@ -71,6 +71,27 @@ export const findById = async (
     );
 };
 
+/**
+ * Find a publication by its public slug.
+ *
+ * Only published publications are returned because
+ * this method is intended for public content resolution.
+ */
+export const findPublishedBySlug = async (
+    slug: string
+): Promise<PublicationDocument | null> => {
+
+    return Publication.findOne({
+
+        slug,
+
+        status:
+            PUBLICATION_STATUS.PUBLISHED,
+
+    });
+
+};
+
 
 /**
  * Save an existing publication.

@@ -1,34 +1,61 @@
 import {
     PUBLICATION_STATUS,
 } from "./publication-status";
+
 import {
     PublicContentType,
 } from "../constants/public-content.types";
-import { SlugService } from "../slugs/slug.service";
-import { AppError } from "../../errors/AppError";
+
+import {
+    SlugService,
+} from "../slugs/slug.service";
+
+import {
+    AppError,
+} from "../../errors/AppError";
+
 import * as publicationRepository
     from "./publication.repository";
+
 import {
     publishEvent,
 } from "../events/public-content.event-bus";
 
+
 interface CreatePublicationInput {
-    entityType: PublicContentType;
-    entityId: string;
-    title: string;
+
+    entityType:
+        PublicContentType;
+
+    entityId:
+        string;
+
+    title:
+        string;
+
     /**
      * Optional explicit slug.
      * If omitted, the slug is generated from the title.
      */
-    slug?: string;
+    slug?:
+        string;
+
     /**
      * Optional semantic context used
      * when the base slug collides.
      */
-    slugContext?: string;
-    seoTitle?: string;
-    seoDescription?: string;
-    canonicalUrl?: string;
+    slugContext?:
+        string;
+
+    seoTitle?:
+        string;
+
+    seoDescription?:
+        string;
+
+    canonicalUrl?:
+        string;
+
 }
 
 
@@ -46,23 +73,32 @@ const MAX_SLUG_ATTEMPTS = 3;
 const isDuplicateSlugError = (
     error: unknown
 ): boolean => {
+
     if (
         !error ||
         typeof error !== "object"
     ) {
+
         return false;
+
     }
+
 
     const mongoError =
         error as {
             code?: number;
-            keyPattern?: Record<string, unknown>;
+            keyPattern?: Record<
+                string,
+                unknown
+            >;
         };
+
 
     return (
         mongoError.code === 11000 &&
         !!mongoError.keyPattern?.slug
     );
+
 };
 
 
@@ -73,33 +109,49 @@ const isDuplicateSlugError = (
 const isDuplicateEntityError = (
     error: unknown
 ): boolean => {
+
     if (
         !error ||
         typeof error !== "object"
     ) {
+
         return false;
+
     }
+
 
     const mongoError =
         error as {
             code?: number;
-            keyPattern?: Record<string, unknown>;
+            keyPattern?: Record<
+                string,
+                unknown
+            >;
         };
+
 
     return (
         mongoError.code === 11000 &&
         !!mongoError.keyPattern?.entityType &&
         !!mongoError.keyPattern?.entityId
     );
+
 };
 
 
 /**
  * Create a new publication.
+ *
+ * Publication creation is independent from
+ * moderation and domain-specific discovery.
+ *
+ * The caller is responsible for deciding
+ * whether the entity is allowed to become public.
  */
 export const createPublication = async (
     data: CreatePublicationInput
 ) => {
+
     const {
         entityType,
         entityId,
@@ -111,24 +163,31 @@ export const createPublication = async (
         canonicalUrl,
     } = data;
 
+
     /*
-     * Basic validation
+     * Basic validation.
      */
     if (!entityId) {
+
         throw new AppError(
             "Entity ID is required.",
             400,
             "ENTITY_ID_REQUIRED"
         );
+
     }
 
+
     if (!title) {
+
         throw new AppError(
             "Publication title is required.",
             400,
             "PUBLICATION_TITLE_REQUIRED"
         );
+
     }
+
 
     /*
      * Check whether the entity already
@@ -143,12 +202,15 @@ export const createPublication = async (
             entityId
         );
 
+
     if (existingPublication) {
+
         throw new AppError(
             "Publication already exists.",
             409,
             "PUBLICATION_ALREADY_EXISTS"
         );
+
     }
 
 
@@ -162,54 +224,61 @@ export const createPublication = async (
 
 
     if (!baseSlug) {
+
         throw new AppError(
             "Unable to generate a valid publication slug.",
             400,
             "INVALID_PUBLICATION_SLUG"
         );
+
     }
 
 
     /*
      * Prepare slug candidates.
      */
-
     const slugCandidates: string[] = [
+
         baseSlug,
+
     ];
 
 
     /*
      * Contextual fallback.
      */
-
     if (slugContext) {
+
         const contextualSlug =
             SlugService.generateWithContext(
                 slug || title,
                 slugContext
             );
 
+
         if (
             contextualSlug &&
             contextualSlug !== baseSlug
         ) {
+
             slugCandidates.push(
                 contextualSlug
             );
+
         }
+
     }
 
 
     /*
      * Deterministic identifier fallback.
      */
-
     const identifierSlug =
         SlugService.generateWithIdentifier(
             title,
             entityId
         );
+
 
     if (
         identifierSlug &&
@@ -217,9 +286,11 @@ export const createPublication = async (
             identifierSlug
         )
     ) {
+
         slugCandidates.push(
             identifierSlug
         );
+
     }
 
 
@@ -235,24 +306,41 @@ export const createPublication = async (
         );
         attempt++
     ) {
+
         const candidateSlug =
             slugCandidates[attempt];
+
+
         try {
+
             const publication =
                 await publicationRepository.create({
+
                     entityType,
+
                     entityId,
+
                     status:
                         PUBLICATION_STATUS.PRIVATE,
+
                     slug:
                         candidateSlug,
+
                     seoTitle,
+
                     seoDescription,
+
                     canonicalUrl,
+
                 });
 
+
             return publication;
-        } catch (error: unknown) {
+
+        } catch (
+            error: unknown
+        ) {
+
             /*
              * Another request may have created
              * the same entity publication after
@@ -263,11 +351,13 @@ export const createPublication = async (
                     error
                 )
             ) {
+
                 throw new AppError(
                     "Publication already exists.",
                     409,
                     "PUBLICATION_ALREADY_EXISTS"
                 );
+
             }
 
 
@@ -281,59 +371,82 @@ export const createPublication = async (
                     error
                 )
             ) {
+
                 continue;
+
             }
+
+
             throw error;
+
         }
+
     }
+
 
     throw new AppError(
         "Unable to generate a unique publication slug.",
         409,
         "PUBLICATION_SLUG_CONFLICT"
     );
+
 };
 
 
 /**
  * Publish a publication.
+ *
+ * Publication lifecycle is independent
+ * from the domain entity itself.
  */
 export const publish = async (
     publicationId: string
 ) => {
+
     const publication =
         await publicationRepository.findById(
             publicationId
         );
 
+
     if (!publication) {
+
         throw new AppError(
             "Publication not found.",
             404,
             "PUBLICATION_NOT_FOUND"
         );
+
     }
+
 
     if (
         publication.status ===
         PUBLICATION_STATUS.PUBLISHED
     ) {
+
         return publication;
+
     }
+
 
     if (
         publication.status ===
         PUBLICATION_STATUS.ARCHIVED
     ) {
+
         throw new AppError(
             "Archived publications cannot be published.",
             409,
             "PUBLICATION_ARCHIVED"
         );
+
     }
+
 
     publication.status =
         PUBLICATION_STATUS.PUBLISHED;
+
 
     /*
      * Preserve the first publication date.
@@ -342,33 +455,50 @@ export const publish = async (
         publication.publishedAt ||
         new Date();
 
+
     /*
      * Publication is visible again.
      */
     publication.unpublishedAt =
         undefined;
 
+
+    /*
+     * Persist publication once.
+     */
     await publicationRepository.save(
         publication
     );
-    await publicationRepository.save(
-        publication
-    );
+
+
+    /*
+     * Notify the public-content event bus.
+     */
     await publishEvent({
-        type: "CONTENT_PUBLISHED",
+
+        type:
+            "CONTENT_PUBLISHED",
+
         publicationId:
             publication._id.toString(),
+
         entityType:
             publication.entityType,
+
         entityId:
             publication.entityId,
+
         slug:
             publication.slug,
+
         publishedAt:
             publication.publishedAt!,
+
     });
 
+
     return publication;
+
 };
 
 
@@ -422,7 +552,9 @@ export const unpublish = async (
         publication
     );
 
+
     return publication;
+
 };
 
 
@@ -463,5 +595,7 @@ export const archive = async (
         publication
     );
 
+
     return publication;
+
 };

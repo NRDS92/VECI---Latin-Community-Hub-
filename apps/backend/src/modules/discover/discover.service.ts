@@ -1,8 +1,15 @@
-import { Event } from "../events/event.model";
-import { User } from "../users/user.model";
-import { Business } from "../business/business.model";
-import { calculateScore } from "./utils/calculateScore";
-import { MODERATION_STATUS } from "../../shared/constants/moderation";
+import {
+  discover,
+} from "../../shared/discovery/discovery.service";
+
+import {
+  DiscoveryRequest,
+  DiscoveryContentType,
+} from "../../shared/discovery/discovery.types";
+
+import {
+  User,
+} from "../users/user.model";
 
 
 interface DiscoverParams {
@@ -19,208 +26,250 @@ interface DiscoverParams {
   date?: string | null;
 }
 
-// 🧠 FILTER BUILDERS (PRODUCTION PATTERN)
-const buildEventFilters = ({
-  city,
-  category,
-  search,
-  date,
-}: any) => {
-  const filters: any = {
-    status: "active",
-    "moderation.status": MODERATION_STATUS.APPROVED,
-    $and: [],
-  };
 
-  // 🔥 FECHA (CLAVE)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  filters.$and.push({
-    dateStart: { $gte: today },
-  });
-
-  if (city) {
-    filters.$and.push({
-      cityId: { $regex: city.trim(), $options: "i" },
-    });
-  }
-
-  if (category && category !== "All") {
-    filters.$and.push({
-      category: category.toLowerCase(),
-    });
-  }
-
-  if (search) {
-    const regex = new RegExp(search, "i");
-
-    filters.$and.push({
-      $or: [
-        { title: regex },
-        { category: regex },
-        { cityId: regex },
-      ],
-    });
-  }
-
-  if (filters.$and.length === 0) delete filters.$and;
-
-  return filters;
-};
-
-const buildBusinessFilters = ({
-  city,
-  category,
-  search,
-  excludeCategory, // 🔥 NEW
-}: any) => {
-  const filters: any = {
-    status: "active", // 🔥 te faltaba esto (importante)
-    $and: [],
-  };
-
-  if (city) {
-    filters.$and.push({
-      "location.cityId": {
-        $regex: city.trim(),
-        $options: "i",
-      },
-    });
-  }
-
-  // ✅ INCLUDE CATEGORY
-  if (category && category !== "All") {
-    filters.$and.push({
-      category: category.toLowerCase(),
-    });
-  }
-
-  // 🔥 EXCLUDE CATEGORY (CLAVE DEL PROBLEMA)
-  if (excludeCategory) {
-    filters.$and.push({
-      category: { $ne: excludeCategory },
-    });
-  }
-
-  if (search) {
-    const regex = new RegExp(search, "i");
-
-    filters.$and.push({
-      $or: [
-        { name: regex },
-        { category: regex },
-        { "location.cityId": regex },
-      ],
-    });
-  }
-
-  if (filters.$and.length === 0) delete filters.$and;
-
-  return filters;
-};
-
+/**
+ * Legacy Mobile Discovery adapter.
+ *
+ * This service preserves the existing Mobile API contract
+ * while delegating discovery logic to the shared Discovery Engine.
+ *
+ * The shared Discovery Engine is responsible for:
+ *
+ * - discoverability
+ * - Event queries
+ * - Business queries
+ * - public visibility rules
+ * - ranking
+ * - pagination
+ *
+ * This adapter is responsible only for:
+ *
+ * - translating the legacy Mobile request
+ * - loading Mobile-specific user context
+ * - translating the shared response back
+ *   into the legacy Mobile response shape
+ */
 export const getDiscoverFeed = async ({
   lat,
   lng,
   city,
   category,
-  excludeCategory,
   type = "all",
+  search = "",
   userId,
   page = 1,
   limit = 10,
-  search = "",
-  date = null,
 }: DiscoverParams) => {
-  const skip = (page - 1) * limit;
 
-  // 🔥 FAVORITES
-  let favoriteCategories: string[] = [];
+  /*
+   * Translate the legacy "type" parameter
+   * into the shared Discovery content types.
+   */
+  const contentTypes:
+    DiscoveryContentType[] =
+      type === "all"
+        ? [
+            "event",
+            "business",
+          ]
+        : type === "events"
+          ? [
+              "event",
+            ]
+          : [
+              "business",
+            ];
+
+
+  /*
+   * Resolve user-specific Discovery context.
+   *
+   * The User model remains a Mobile/domain concern.
+   *
+   * The shared Discovery Engine should NOT query
+   * the User model directly.
+   *
+   * Instead, Mobile resolves the information it
+   * already owns and passes it through DiscoveryContext.
+   */
+  let favoriteCategories:
+    string[] = [];
+
 
   if (userId) {
-    const user = await User.findById(userId).populate("favorites");
 
-    if (user && user.favorites.length > 0) {
-      favoriteCategories = user.favorites.map(
-        (event: any) => event.category
+    const user =
+      await User.findById(
+        userId
+      ).populate(
+        "favorites"
       );
+
+
+    if (
+      user &&
+      user.favorites &&
+      user.favorites.length > 0
+    ) {
+
+      favoriteCategories =
+        user.favorites
+          .map(
+            (favorite: any) =>
+              favorite?.category
+          )
+          .filter(
+            (
+              category
+            ): category is string =>
+              typeof category === "string"
+          );
+
     }
+
   }
 
-  // 🔥 FILTERS
-  const eventFilters = buildEventFilters({
-    city,
-    category,
-    search,
-    date,
-  });
 
-  const businessFilters = buildBusinessFilters({
-    city,
-    category,
-    search,
-    excludeCategory,
-  });
+  /*
+   * Build the shared Discovery request.
+   *
+   * The legacy Mobile endpoint can continue
+   * receiving the same parameters while the
+   * actual Discovery logic lives in shared/discovery.
+   */
+  const request:
+    DiscoveryRequest = {
 
-  // 🔥 FETCH
-  const [events, businesses] = await Promise.all([
-    type === "events" || type === "all"
-      ? Event.find(eventFilters)
-          .populate("createdBy", "name profileImage")
-          .populate("businessId", "name images")
-          .skip(skip)
-          .limit(limit)
-      : Promise.resolve([]),
+      query: {
 
-    type === "business" || type === "all"
-      ? Business.find(businessFilters)
-          .skip(skip)
-          .limit(limit)
-      : Promise.resolve([]),
-  ]);
+        city,
 
-  // 🔥 RANK EVENTS
-  const rankedEvents = events
-    .map((event) => {
-      const score = calculateScore(
-        event,
-        lat || 0,
-        lng || 0,
-        favoriteCategories
-      );
+        category,
 
-      return {
-        ...event.toObject(),
-        type: "event",
-        score,
-      };
-    })
-    .sort((a, b) => b.score - a.score);
+        search,
 
-  // 🔥 NORMALIZE BUSINESS
-  const normalizedBusinesses = businesses.map((b) => ({
-    ...b.toObject(),
-    type: "business",
-  }));
+        contentTypes,
 
-  // 🔥 MIX
-  let mixedFeed: any[] = [];
+        /*
+         * The previous Mobile Discovery always
+         * considered upcoming Events.
+         *
+         * We preserve that behavior here.
+         */
+        date: {
+          type:
+            "upcoming",
+        },
 
-  if (type === "events") {
-    mixedFeed = rankedEvents;
-  } else if (type === "business") {
-    mixedFeed = normalizedBusinesses;
-  } else {
-    mixedFeed = [...rankedEvents, ...normalizedBusinesses];
+      },
 
-    // shuffle simple
-    mixedFeed = mixedFeed.sort(() => 0.5 - Math.random());
-  }
 
+      /*
+       * User and location information belong
+       * to Discovery context, not filtering.
+       *
+       * Ranking consumes this context.
+       */
+      context: {
+
+        userId,
+
+        favoriteCategories,
+
+        location:
+          lat !== undefined &&
+          lng !== undefined
+            ? {
+                lat,
+                lng,
+              }
+            : undefined,
+
+      },
+
+
+      /*
+       * Options control how Discovery should
+       * behave for this consumer.
+       */
+      options: {
+
+        visibility:
+          "public",
+
+        ranking:
+          userId
+            ? "personalized"
+            : "contextual",
+
+        page,
+
+        limit,
+
+      },
+
+    };
+
+
+  /*
+   * Execute the shared Discovery Engine.
+   */
+  const result =
+    await discover(
+      request
+    );
+
+
+  /*
+   * Preserve the existing Mobile response shape.
+   *
+   * The shared Discovery Engine returns:
+   *
+   * {
+   *   type,
+   *   entity
+   * }
+   *
+   * The legacy Mobile endpoint expects:
+   *
+   * {
+   *   ...entity,
+   *   type
+   * }
+   *
+   * Therefore this adapter converts the
+   * normalized shared representation back
+   * into the Mobile representation.
+   */
+  const recommended =
+    result.items.map(
+      item => ({
+
+        ...item.entity.toObject(),
+
+        type:
+          item.type,
+
+      })
+    );
+
+
+  /*
+   * Return the legacy response contract.
+   *
+   * Pagination is now provided by the
+   * shared Discovery Engine.
+   */
   return {
-    recommended: mixedFeed,
-    page,
-    hasMore: mixedFeed.length === limit,
+
+    recommended,
+
+    page:
+      result.page,
+
+    hasMore:
+      result.hasMore,
+
   };
+
 };
