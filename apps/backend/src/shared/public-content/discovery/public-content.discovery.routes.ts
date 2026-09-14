@@ -4,6 +4,7 @@ import {
 
 import {
     getPublicEvents,
+    getPublicBusinesses,
 } from "./public-content.discovery.controller";
 
 
@@ -14,6 +15,12 @@ const router =
 router.get(
     "/events",
     getPublicEvents
+);
+
+
+router.get(
+    "/businesses",
+    getPublicBusinesses
 );
 
 
