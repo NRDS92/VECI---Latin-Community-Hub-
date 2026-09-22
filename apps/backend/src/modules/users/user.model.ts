@@ -25,14 +25,17 @@ export type SubscriptionPlan =
 export interface IUser extends Document {
   name: string;
   email: string;
+
   passwordHash?: string;
+
   provider: AuthProvider;
   providerId?: string;
 
   role: "user" | "admin";
 
   subscription: {
-      plan: SubscriptionPlan;
+    plan: SubscriptionPlan;
+    maxBusinesses: number;
   };
 
   cityId?: string;
