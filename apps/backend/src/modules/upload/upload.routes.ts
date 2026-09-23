@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { upload } from "../../middleware/upload.middleware";
 import { uploadImage } from "../../utils/upload.service";
+import { authMiddleware } from "../../middleware/auth.middleware";
 import fs from "fs-extra";
 
 const router = Router();
 
-router.post("/", upload.single("image"), async (req, res, next) => {
+router.post("/", authMiddleware, upload.single("image"), async (req, res, next) => {
     console.log("📸 Upload request received");
     try {
         const file = req.file;
