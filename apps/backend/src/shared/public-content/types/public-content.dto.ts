@@ -1,27 +1,20 @@
 export interface PublicEventDTO {
     id: string;
-
     slug: string;
-
     title: string;
-
     description?: string;
-
     category: string;
-
-    eventType:
-        | "official"
-        | "community";
-
+    eventType: string;
     cityId: string;
-
     address: string;
-
     dateStart: Date;
-
     dateEnd?: Date;
-
     image?: string;
+
+    location?: {
+        type: "Point";
+        coordinates: [number, number];
+    };
 }
 
 
@@ -53,6 +46,11 @@ export interface PublicBusinessDTO {
     country?: string;
 
     address?: string;
+
+    coordinates?: {
+        lat: number;
+        lng: number;
+    };
 
     image?: string;
 
