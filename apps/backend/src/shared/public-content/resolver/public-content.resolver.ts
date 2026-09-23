@@ -100,6 +100,17 @@ const toPublicEventDTO = (
 
         image:
             event.images?.[0],
+        
+        location:
+        event.location
+            ? {
+                type:
+                    event.location.type,
+
+                coordinates:
+                    event.location.coordinates,
+            }
+            : undefined,
 
     };
 
@@ -137,77 +148,54 @@ const toPublicBusinessDTO = (
 ): PublicBusinessDTO => {
 
     return {
-
         id:
             business._id.toString(),
-
         slug,
-
         name:
             business.name,
-
         description:
             business.description,
-
         category:
             business.category,
-
         subCategory:
             business.subCategory,
-
         cityId:
             business.location.cityId,
-
         country:
             business.location.country,
-
         address:
             business.location.address,
-
+        coordinates:
+            business.location.coordinates,
         image:
             business.images?.profile,
-
         coverImage:
             business.images?.cover,
-
         website:
             business.contact?.website,
-
         instagram:
             business.contact?.instagram,
-
         whatsapp:
             business.contact?.whatsapp,
-
         priceRange:
             business.priceRange,
-
         tags:
             business.tags ?? [],
-
         languages:
             business.languages ?? [],
-
         isLatinoOwned:
             business.isLatinoOwned,
-
         countryOfOrigin:
             business.countryOfOrigin,
-
         rating: {
-
             average:
                 business.rating?.average ?? 0,
-
             count:
                 business.rating?.count ?? 0,
-
         },
-
         verificationStatus:
             business.verification?.status ??
             "unverified",
-
     };
 
 };
