@@ -222,8 +222,7 @@ const toPublicEventDTO = (
             event.dateStart,
         dateEnd:
             event.dateEnd,
-        image:
-            event.images?.[0],
+        images: event.images ?? [],
         location:
             event.location
                 ? {
