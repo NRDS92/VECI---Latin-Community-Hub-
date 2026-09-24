@@ -69,6 +69,7 @@ const toPublicEventDTO = (
     event: EventDocument,
     slug: string
 ): PublicEventDTO => {
+    
     return {
         id: event._id.toString(),
         slug,

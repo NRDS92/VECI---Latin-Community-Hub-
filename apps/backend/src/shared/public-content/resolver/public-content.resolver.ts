@@ -189,108 +189,76 @@ const toPublicEventDTO = (
     event: PublicEventSource,
     slug: string
 ): PublicEventDTO => {
-
     const createdBy = {
-
         id:
             event.createdBy._id.toString(),
-
         name:
             event.createdBy.name,
-
         profileImage:
             event.createdBy.profileImage ??
             undefined,
     };
-
-
+    console.log(
+    "🔥 DTO ATTACHMENT:",
+    event.attachment
+);
     return {
-
         id:
             event._id.toString(),
-
         slug,
-
         title:
             event.title,
-
         description:
             event.description,
-
         category:
             event.category,
-
         eventType:
             event.eventType,
-
         cityId:
             event.cityId,
-
         address:
             event.address,
-
         dateStart:
             event.dateStart,
-
         dateEnd:
             event.dateEnd,
-
         image:
             event.images?.[0],
-
         location:
             event.location
                 ? {
-
-                      type:
-                          event.location.type,
-
-                      coordinates:
-                          event.location.coordinates,
-                  }
-
+                    type:
+                        event.location.type,
+                    coordinates:
+                        event.location.coordinates,
+                }
                 : undefined,
-
         price:
             event.price
-
                 ? {
-
-                      type:
-                          event.price.type,
-
-                      amount:
-                          event.price.amount,
-
-                      currency:
-                          event.price.currency,
-                  }
-
+                    type:
+                        event.price.type,
+                    amount:
+                        event.price.amount,
+                    currency:
+                        event.price.currency,
+                }
                 : undefined,
-
         links:
             event.links ?? [],
-
         createdBy,
-
         goodToKnow:
             event.goodToKnow ?? [],
-
         attachment:
             event.attachment
-
                 ? {
-
-                      url:
-                          event.attachment.url,
-
-                      name:
-                          event.attachment.name,
-
-                      size:
-                          event.attachment.size,
-                  }
-
+                    url:
+                        event.attachment.url,
+                    name:
+                        event.attachment.name,
+                    size:
+                        event.attachment.size,
+                }
                 : undefined,
     };
 };
