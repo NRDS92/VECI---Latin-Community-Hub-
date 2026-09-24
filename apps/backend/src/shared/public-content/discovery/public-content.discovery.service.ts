@@ -81,7 +81,7 @@ const toPublicEventDTO = (
         address: event.address,
         dateStart: event.dateStart,
         dateEnd: event.dateEnd,
-        image: event.images?.[0],
+        images: event.images ?? [],
         location: event.location
             ? {
                 type: event.location.type,

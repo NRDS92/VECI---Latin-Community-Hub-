@@ -9,7 +9,7 @@ export interface PublicEventDTO {
     address: string;
     dateStart: Date;
     dateEnd?: Date;
-    image?: string;
+    images: string[];
     location?: {
         type: "Point";
         coordinates: [number, number];
