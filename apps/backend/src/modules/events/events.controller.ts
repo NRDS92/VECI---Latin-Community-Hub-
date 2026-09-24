@@ -238,10 +238,22 @@ export const uploadEventAttachment = catchAsync(
                     file
                 );
 
+            console.log("🔥 ATTACHMENT RETURNED:", attachment);
+
+            const verifyEvent = await Event
+                .findById(id)
+                .lean();
+
+            console.log(
+                "🔥 ATTACHMENT FROM DATABASE:",
+                verifyEvent?.attachment
+            );
+
             return res.json({
                 success: true,
                 data: attachment,
             });
+
         } finally {
             await fs.remove(file.path);
         }
