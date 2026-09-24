@@ -71,51 +71,38 @@ const toPublicEventDTO = (
 ): PublicEventDTO => {
     return {
         id: event._id.toString(),
-
         slug,
-
         title: event.title,
-
         description: event.description,
-
         category: event.category,
-
         eventType: event.eventType,
-
         cityId: event.cityId,
-
         address: event.address,
-
         dateStart: event.dateStart,
-
         dateEnd: event.dateEnd,
-
         image: event.images?.[0],
-
         location: event.location
-                ? {
-                    type: event.location.type,
-                    coordinates: event.location.coordinates,
-                }
-                : undefined,
-
+            ? {
+                type: event.location.type,
+                coordinates: event.location.coordinates,
+            }
+            : undefined,
         price: event.price
-                ? {
-                    type: event.price.type,
-                    amount: event.price.amount,
-                    currency: event.price.currency,
-                }
-                : undefined,
-
+            ? {
+                type: event.price.type,
+                amount: event.price.amount,
+                currency: event.price.currency,
+            }
+            : undefined,
         links: event.links ?? [],
-
+        goodToKnow: event.goodToKnow ?? [],
         attachment: event.attachment
-                ? {
-                    url: event.attachment.url,
-                    name: event.attachment.name,
-                    size: event.attachment.size,
-                }
-                : undefined,
+            ? {
+                url: event.attachment.url,
+                name: event.attachment.name,
+                size: event.attachment.size,
+            }
+            : undefined,
     };
 };
 

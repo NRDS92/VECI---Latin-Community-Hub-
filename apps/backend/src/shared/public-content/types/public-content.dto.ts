@@ -23,6 +23,12 @@ export interface PublicEventDTO {
         label: string;
         url: string;
     }[];
+    createdBy?: {
+        id: string;
+        name: string;
+        profileImage?: string;
+    };
+    goodToKnow: string[];
     attachment?: {
         url: string;
         name: string;
