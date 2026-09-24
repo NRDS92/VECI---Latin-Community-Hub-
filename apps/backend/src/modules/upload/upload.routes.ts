@@ -1,14 +1,21 @@
 import { Router } from "express";
+
 import { upload } from "../../middleware/upload.middleware";
-import { uploadImage } from "../../utils/upload.service";
+import { uploadImage } from "./upload.service";
+
 import { authMiddleware } from "../../middleware/auth.middleware";
+
 import fs from "fs-extra";
 
 const router = Router();
 
-router.post("/", authMiddleware, upload.single("image"), async (req, res, next) => {
-    console.log("📸 Upload request received");
-    try {
+router.post(
+    "/",
+    authMiddleware,
+    upload.single("image"),
+    async (req, res, next) => {
+        console.log("📸 Upload request received");
+
         const file = req.file;
 
         if (!file) {
@@ -18,19 +25,19 @@ router.post("/", authMiddleware, upload.single("image"), async (req, res, next) 
             });
         }
 
-        // ☁️ subir a cloudinary
-        const imageUrl = await uploadImage(file.path);
+        try {
+            const imageUrl = await uploadImage(file.path);
 
-        // 🧹 borrar archivo local
-        await fs.remove(file.path);
-
-        res.json({
-            success: true,
-            data: imageUrl,
-        });
-    } catch (err) {
-        next(err);
+            return res.json({
+                success: true,
+                data: imageUrl,
+            });
+        } catch (error) {
+            next(error);
+        } finally {
+            await fs.remove(file.path);
+        }
     }
-});
+);
 
 export default router;

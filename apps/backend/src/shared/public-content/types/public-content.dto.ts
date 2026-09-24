@@ -28,58 +28,36 @@ export interface PublicEventDTO {
  * internal ownership or administrative data.
  */
 export interface PublicBusinessDTO {
-
     id: string;
-
     slug: string;
-
     name: string;
-
     description?: string;
-
     category: string;
-
     subCategory?: string;
-
     cityId: string;
-
     country?: string;
-
     address?: string;
-
     coordinates?: {
         lat: number;
         lng: number;
     };
-
     image?: string;
-
     coverImage?: string;
-
     website?: string;
-
     instagram?: string;
-
     whatsapp?: string;
-
     priceRange?:
         | "$"
         | "$$"
         | "$$$";
-
     tags: string[];
-
     languages: string[];
-
     isLatinoOwned: boolean;
-
     countryOfOrigin?: string;
-
     rating: {
         average: number;
         count: number;
     };
-
     verificationStatus:
         | "unverified"
         | "pending"

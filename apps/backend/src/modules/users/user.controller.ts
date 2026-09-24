@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
+import fs from "fs-extra";
 
 import * as usersService from "./user.service";
 
-import { uploadImage } from "../../utils/upload.service";
+import { uploadImage } from "../upload/upload.service";
 import { User } from "./user.model";
 
 // --------------------------------------------------
@@ -10,28 +11,26 @@ import { User } from "./user.model";
 // --------------------------------------------------
 
 export const toggleFavorite = async (
-  req: Request<{ eventId: string }>,
-  res: Response
+    req: Request<{ eventId: string }>,
+    res: Response
 ) => {
-  try {
-    const userId = (req as any).user.id;
-    const { eventId } = req.params;
-
-    const favorites = await usersService.toggleFavorite(
-      userId,
-      eventId
-    );
-
-    res.json({
-      success: true,
-      data: favorites,
-    });
-  } catch (error: any) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
+    try {
+        const userId = (req as any).user.id;
+        const { eventId } = req.params;
+        const favorites = await usersService.toggleFavorite(
+            userId,
+            eventId
+        );
+        res.json({
+            success: true,
+            data: favorites,
+        });
+    } catch (error: any) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
 };
 
 // --------------------------------------------------
@@ -39,41 +38,46 @@ export const toggleFavorite = async (
 // --------------------------------------------------
 
 export const uploadProfileImage = async (
-  req: Request,
-  res: Response
+    req: Request,
+    res: Response
 ) => {
-  try {
-    const userId = (req as any).user.id;
     const file = (req as any).file;
 
-    if (!file) {
-      throw new Error("No file uploaded");
+    try {
+        const userId = (req as any).user.id;
+
+        if (!file) {
+            throw new Error("No file uploaded");
+        }
+
+        const imageUrl = await uploadImage(file.path);
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        user.profileImage = imageUrl;
+
+        await user.save();
+
+        const updatedUser = await usersService.getMe(userId);
+
+        return res.json({
+            success: true,
+            data: updatedUser,
+        });
+    } catch (error: any) {
+        return res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    } finally {
+        if (file?.path) {
+            await fs.remove(file.path);
+        }
     }
-
-    const imageUrl = await uploadImage(file.path);
-
-    const user = await User.findById(userId);
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    user.profileImage = imageUrl;
-
-    await user.save();
-
-    const updatedUser = await usersService.getMe(userId);
-
-    res.json({
-      success: true,
-      data: updatedUser,
-    });
-  } catch (error: any) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
 };
 
 // --------------------------------------------------
