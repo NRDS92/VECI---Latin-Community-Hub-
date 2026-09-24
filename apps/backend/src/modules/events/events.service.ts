@@ -5,7 +5,10 @@ import { AppError } from "../../shared/errors/AppError";
 import { EventDocument } from "./event.model";
 import { MODERATION_STATUS } from "../../shared/constants/moderation";
 import { approvedModerationFilter } from "../../shared/moderation/moderation.filter";
-
+import {
+    uploadPdf,
+    deletePdf,
+} from "../upload/upload.service";
 
 // 🚀 CREATE EVENT
 export const createEvent = async (
@@ -22,7 +25,6 @@ export const createEvent = async (
     const validImages = (data.images || []).filter((img) =>
         img.startsWith("http")
     );
-
     const event = new Event({
         title: data.title,
         description: data.description,
@@ -31,32 +33,25 @@ export const createEvent = async (
         cityId: data.cityId,
         address: data.address,
         images: validImages,
-
         location: {
             type: "Point",
             coordinates: [data.longitude, data.latitude],
         },
-
+        price: data.price,
+        links: data.links || [],
         contact: data.contact || {},
-
         dateStart: data.dateStart,
         dateEnd: data.dateEnd,
-
         createdBy: userId,
-
         businessId: data.businessId
             ? new mongoose.Types.ObjectId(data.businessId)
             : undefined,
-
         goodToKnow: data.goodToKnow || [],
-
         moderation: {
             status: MODERATION_STATUS.PENDING,
         },
     });
-
     await event.save();
-
     return event;
 };
 
@@ -151,20 +146,22 @@ export const updateEvent = async (
     eventId: string,
     userId: string,
     data: {
-    title?: string;
-    description?: string;
-    images?: string[];
-    category?: IEvent["category"];
-    address?: string;
-    cityId?: string;
-    dateStart?: Date;
-    dateEnd?: Date;
-    contact?: IEvent["contact"];
-    goodToKnow?: string[];
-    latitude?: number;
-    longitude?: number;
-    businessId?: string;
-}
+        title?: string;
+        description?: string;
+        images?: string[];
+        category?: IEvent["category"];
+        address?: string;
+        cityId?: string;
+        dateStart?: Date;
+        dateEnd?: Date;
+        contact?: IEvent["contact"];
+        goodToKnow?: string[];
+        price?: IEvent["price"];
+        links?: IEvent["links"];
+        latitude?: number;
+        longitude?: number;
+        businessId?: string;
+    }
 ) => {
     const event = await Event.findById(eventId) as EventDocument | null;
 
@@ -200,6 +197,8 @@ export const updateEvent = async (
     if (data.dateEnd !== undefined) event.dateEnd = data.dateEnd;
     if (data.contact !== undefined) event.contact = data.contact;
     if (data.goodToKnow !== undefined) event.goodToKnow = data.goodToKnow;
+    if (data.price !== undefined) event.price = data.price;
+    if (data.links !== undefined) event.links = data.links;
 
     await event.save();
 
@@ -222,4 +221,56 @@ export const deleteEvent = async (
     }
 
     await event.deleteOne();
+};
+
+export const uploadEventAttachment = async (
+    event: EventDocument,
+    file: Express.Multer.File
+) => {
+    const previousAttachment = event.attachment;
+
+    // 1. Subir primero el nuevo PDF
+    const uploadedPdf = await uploadPdf(file.path);
+
+    try {
+        // 2. Guardar el nuevo PDF en MongoDB
+        event.attachment = {
+            url: uploadedPdf.url,
+            publicId: uploadedPdf.publicId,
+            name: file.originalname,
+            size: file.size,
+        };
+
+        await event.save();
+    } catch (error) {
+        // 3. Si MongoDB falla, eliminar el nuevo PDF
+        // para evitar dejarlo huérfano en Cloudinary.
+        try {
+            await deletePdf(uploadedPdf.publicId);
+        } catch (cleanupError) {
+            console.error(
+                "Failed to cleanup newly uploaded PDF:",
+                cleanupError
+            );
+        }
+
+        throw error;
+    }
+
+    // 4. MongoDB ya apunta al nuevo PDF.
+    // Ahora podemos eliminar el anterior.
+    if (previousAttachment?.publicId) {
+        try {
+            await deletePdf(previousAttachment.publicId);
+        } catch (error) {
+            // El evento ya está correctamente actualizado.
+            // Solo queda un recurso antiguo en Cloudinary para limpiar.
+            console.error(
+                "Failed to delete previous event PDF:",
+                error
+            );
+        }
+    }
+
+    return event.attachment;
 };

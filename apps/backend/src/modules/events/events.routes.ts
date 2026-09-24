@@ -1,23 +1,75 @@
 import { Router } from "express";
+
 import * as eventsController from "./events.controller";
+
 import { authMiddleware } from "../../middleware/auth.middleware";
+
 import { optionalAuthMiddleware } from "../../middleware/optionalAuth.middleware";
 
+import { uploadPdfFile } from "../../middleware/upload.middleware";
+
 const router = Router();
-router.get("/me", authMiddleware, eventsController.getMyEvents);
 
-router.get("/", eventsController.getEvents);
-router.get("/nearby", eventsController.getNearbyEvents);
+router.get(
+    "/me",
+    authMiddleware,
+    eventsController.getMyEvents
+);
 
-//  específicas
-router.post("/:id/attend", authMiddleware, eventsController.attendEvent);
-router.post("/:id/view", eventsController.trackView);
+router.get(
+    "/",
+    eventsController.getEvents
+);
 
-//  catch general
-router.get("/:id", optionalAuthMiddleware, eventsController.getEventById);
+router.get(
+    "/nearby",
+    eventsController.getNearbyEvents
+);
 
-router.post("/", authMiddleware, eventsController.createEvent);
-router.delete("/:id", authMiddleware, eventsController.deleteEvent);
-router.patch("/:id", authMiddleware, eventsController.updateEvent);
+// ESPECÍFICAS
+
+router.post(
+    "/:id/attend",
+    authMiddleware,
+    eventsController.attendEvent
+);
+
+router.post(
+    "/:id/attachment",
+    authMiddleware,
+    uploadPdfFile.single("attachment"),
+    eventsController.uploadEventAttachment
+);
+
+router.post(
+    "/:id/view",
+    eventsController.trackView
+);
+
+// GENERAL
+
+router.get(
+    "/:id",
+    optionalAuthMiddleware,
+    eventsController.getEventById
+);
+
+router.post(
+    "/",
+    authMiddleware,
+    eventsController.createEvent
+);
+
+router.delete(
+    "/:id",
+    authMiddleware,
+    eventsController.deleteEvent
+);
+
+router.patch(
+    "/:id",
+    authMiddleware,
+    eventsController.updateEvent
+);
 
 export default router;
