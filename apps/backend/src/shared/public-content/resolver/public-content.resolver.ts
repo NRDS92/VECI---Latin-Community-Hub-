@@ -61,59 +61,58 @@ const toPublicEventDTO = (
     event: EventDocument,
     slug: string
 ): PublicEventDTO => {
-
     return {
-
-        id:
-            event._id.toString(),
+        id: event._id.toString(),
 
         /*
          * The slug belongs to Publication,
          * therefore it is added by the resolver.
          */
-        slug:
-            slug,
+        slug,
 
-        title:
-            event.title,
+        title: event.title,
 
-        description:
-            event.description,
+        description: event.description,
 
-        category:
-            event.category,
+        category: event.category,
 
-        eventType:
-            event.eventType,
+        eventType: event.eventType,
 
-        cityId:
-            event.cityId,
+        cityId: event.cityId,
 
-        address:
-            event.address,
+        address: event.address,
 
-        dateStart:
-            event.dateStart,
+        dateStart: event.dateStart,
 
-        dateEnd:
-            event.dateEnd,
+        dateEnd: event.dateEnd,
 
-        image:
-            event.images?.[0],
-        
-        location:
-        event.location
+        image: event.images?.[0],
+
+        location: event.location
             ? {
-                type:
-                    event.location.type,
-
-                coordinates:
-                    event.location.coordinates,
-            }
+                  type: event.location.type,
+                  coordinates: event.location.coordinates,
+              }
             : undefined,
 
-    };
+        price: event.price
+            ? {
+                  type: event.price.type,
+                  amount: event.price.amount,
+                  currency: event.price.currency,
+              }
+            : undefined,
 
+        links: event.links ?? [],
+
+        attachment: event.attachment
+            ? {
+                  url: event.attachment.url,
+                  name: event.attachment.name,
+                  size: event.attachment.size,
+              }
+            : undefined,
+    };
 };
 
 
