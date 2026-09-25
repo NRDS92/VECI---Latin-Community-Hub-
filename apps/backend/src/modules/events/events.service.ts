@@ -9,6 +9,7 @@ import {
     uploadPdf,
     deletePdf,
 } from "../upload/upload.service";
+import { generateUniqueSlug } from "../../shared/slug/slug.service";
 
 // 🚀 CREATE EVENT
 export const createEvent = async (
@@ -22,11 +23,16 @@ export const createEvent = async (
             "BUSINESS_REQUIRED"
         );
     }
+    const slug = await generateUniqueSlug({
+        model: Event,
+        value: data.title,
+    });
     const validImages = (data.images || []).filter((img) =>
         img.startsWith("http")
     );
     const event = new Event({
         title: data.title,
+        slug,
         description: data.description,
         category: data.category,
         eventType: data.eventType,
