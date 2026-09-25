@@ -27,6 +27,7 @@ export const createEvent = async (
         model: Event,
         value: data.title,
     });
+    console.log("🔥 GENERATED EVENT SLUG:", slug);
     const validImages = (data.images || []).filter((img) =>
         img.startsWith("http")
     );
@@ -57,7 +58,9 @@ export const createEvent = async (
             status: MODERATION_STATUS.PENDING,
         },
     });
+    console.log("🔥 EVENT BEFORE SAVE:", event.toObject());
     await event.save();
+    console.log("🔥 EVENT AFTER SAVE:", event.toObject());
     return event;
 };
 
@@ -103,7 +106,19 @@ export const getEvents = async () => {
         ...approvedModerationFilter,
     }).sort({ dateStart: 1 });
 };
+// GET BY SLUG
+export const getEventBySlug = async (slug: string) => {
+    const event = await Event.findOne({
+        slug,
+        status: "active",
+        ...approvedModerationFilter,
+    })
+        .populate("createdBy", "name profileImage")
+        .populate("businessId", "name images")
+        .lean();
 
+    return event;
+};
 // 🚀 GET BY ID
 export const getEventById = async (id: string) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
