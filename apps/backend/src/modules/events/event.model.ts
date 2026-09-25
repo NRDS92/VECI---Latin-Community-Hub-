@@ -7,12 +7,7 @@ import { ModerationSchema } from "../../shared/moderation/moderation.schema";
 
 export interface IEvent extends Document {
     title: string;
-    slug: {
-        type: String,
-        required: true,
-        unique: true,
-        index: true,
-    },
+    slug?: string;
     description?: string;
     eventType: "official" | "community";
     category:
@@ -75,6 +70,12 @@ const EventSchema = new Schema<IEvent>(
     {
         title: { type: String, required: true },
         description: String,
+        slug: {
+            type: String,
+            required: true,
+            unique: true,
+            index: true,
+        },
         eventType: {
             type: String,
             enum: ["official", "community"],
