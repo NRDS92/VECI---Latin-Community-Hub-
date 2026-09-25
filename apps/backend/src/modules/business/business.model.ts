@@ -13,7 +13,6 @@ import { ModerationSchema } from "../../shared/moderation/moderation.schema";
 export interface IBusiness extends Document {
   name: string;
   description: string;
-
   // 🧠 CATEGORY SYSTEM
   category:
     | "food"
@@ -22,7 +21,6 @@ export interface IBusiness extends Document {
     | "shopping"
     | "education"
     | "health";
-
   subCategory?:
     | "restaurant"
     | "cafe"
@@ -42,14 +40,11 @@ export interface IBusiness extends Document {
     | "academy"
     | "clinic"
     | "gym";
-
   owner: mongoose.Types.ObjectId;
-
   images: {
     profile: string;
     cover?: string;
   };
-
   location: {
     address: string;
     cityId: string;
@@ -59,7 +54,6 @@ export interface IBusiness extends Document {
       lng: number;
     };
   };
-
   contact: {
     email?: string;
     phone?: string;
@@ -67,28 +61,21 @@ export interface IBusiness extends Document {
     instagram?: string;
     whatsapp?: string;
   };
-
   // 🧾 MENU (PDF)
   menu?: string;
-
   // 💰 PRICE RANGE
   priceRange?: "$" | "$$" | "$$$";
-
   tags: string[];
   languages: string[];
-
   isLatinoOwned: boolean;
   countryOfOrigin?: string;
-
   rating: {
     average: number;
     count: number;
   };
-
   likesCount: number;
   followersCount: number;
   eventsCount: number;
-
   verification: {
     status: "unverified" | "pending" | "verified" | "rejected";
     verifiedAt?: Date;
@@ -100,14 +87,10 @@ export interface IBusiness extends Document {
     rejectionReason?: ModerationRejectionReason;
     rejectionComment?: string;
   };
-
   isFeatured: boolean;
   visibilityScore: number;
-
   status: "active" | "blocked";
-
   slug?: string;
-
   createdAt: Date;
   updatedAt: Date;
 }
