@@ -7,6 +7,12 @@ import { ModerationSchema } from "../../shared/moderation/moderation.schema";
 
 export interface IEvent extends Document {
     title: string;
+    slug: {
+        type: String,
+        required: true,
+        unique: true,
+        index: true,
+    },
     description?: string;
     eventType: "official" | "community";
     category:
