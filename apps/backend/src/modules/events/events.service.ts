@@ -58,9 +58,7 @@ export const createEvent = async (
             status: MODERATION_STATUS.PENDING,
         },
     });
-    console.log("🔥 EVENT BEFORE SAVE:", event.toObject());
     await event.save();
-    console.log("🔥 EVENT AFTER SAVE:", event.toObject());
     return event;
 };
 

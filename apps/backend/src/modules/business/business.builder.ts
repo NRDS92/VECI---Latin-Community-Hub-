@@ -13,26 +13,139 @@ export const buildBusiness = ({
     slug,
 }: BuildBusinessParams) => {
 
-    const normalizedCategory = data.category.toLowerCase();
+    const normalizedCategory =
+        data.category.toLowerCase();
 
-    const normalizedSubCategory = data.subCategory
-        ? data.subCategory.toLowerCase()
-        : undefined;
+    const normalizedSubCategory =
+        data.subCategory
+            ? data.subCategory.toLowerCase()
+            : undefined;
 
     return new Business({
-        ...data,
+
+        // ==================================================
+        // IDENTITY
+        // ==================================================
+
+        name: data.name.trim(),
+
+        description: data.description?.trim(),
+
         slug,
-        owner: ownerId,
+
+
+        // ==================================================
+        // CLASSIFICATION
+        // ==================================================
+
+        providerType: data.providerType,
+
         category: normalizedCategory,
+
         subCategory: normalizedSubCategory,
+
+
+        // ==================================================
+        // OWNER
+        // ==================================================
+
+        owner: ownerId,
+
+
+        // ==================================================
+        // PROFILE
+        // ==================================================
+
+        profile: {
+            headline: data.profile.headline?.trim(),
+
+            services: data.profile.services,
+
+            specialties: data.profile.specialties,
+
+            languages: data.profile.languages,
+
+            serviceArea: data.profile.serviceArea,
+
+            availability: data.profile.availability,
+
+            pricing: data.profile.pricing,
+        },
+
+
+        // ==================================================
+        // IMAGES
+        // ==================================================
+
+        images: {
+            profile: data.images.profile,
+
+            cover: data.images.cover,
+
+            gallery: data.images.gallery,
+        },
+
+
+        // ==================================================
+        // DOCUMENTS
+        // ==================================================
+
+        documents: data.documents,
+
+
+        // ==================================================
+        // LOCATION
+        // ==================================================
+
         location: {
-            address: data.location.address,
+            address: data.location.address.trim(),
+
             cityId: data.location.cityId.trim(),
-            country: data.location.country,
+
+            country: data.location.country.trim(),
+
             coordinates: {
                 lat: data.location.latitude,
+
                 lng: data.location.longitude,
             },
         },
+
+
+        // ==================================================
+        // CONTACT
+        // ==================================================
+
+        contact: {
+            email: data.contact.email,
+
+            phone: data.contact.phone,
+
+            website: data.contact.website,
+
+            instagram: data.contact.instagram,
+
+            whatsapp: data.contact.whatsapp,
+        },
+
+
+        // ==================================================
+        // COMMUNITY
+        // ==================================================
+
+        community: {
+            isLatinoOwned:
+                data.community.isLatinoOwned,
+
+            countryOfOrigin:
+                data.community.countryOfOrigin,
+        },
+
+
+        // ==================================================
+        // DISCOVERY
+        // ==================================================
+
+        tags: data.tags,
     });
 };
