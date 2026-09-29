@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
 
 import { Business } from "./business.model";
+
 import {
     CreateBusinessInput,
+    UpdateBusinessInput,
+    createBusinessSchema,
 } from "./business.validation";
 
 import { AppError } from "../../shared/errors/AppError";
@@ -29,6 +32,9 @@ export const createBusiness = async (
     ownerId: string
 ) => {
 
+    const validatedData =
+        createBusinessSchema.parse(data);
+
     // --------------------------------------------------
     // Check subscription / permissions
     // --------------------------------------------------
@@ -42,7 +48,7 @@ export const createBusiness = async (
 
     const slug = await generateUniqueSlug({
         model: Business,
-        value: data.name,
+        value: validatedData.name,
     });
 
 
@@ -51,7 +57,7 @@ export const createBusiness = async (
     // --------------------------------------------------
 
     const business = buildBusiness({
-        data,
+        data: validatedData,
         ownerId,
         slug,
     });
@@ -121,13 +127,13 @@ export const getBusinessById = async (
 
 
 // ======================================================
-// UPDATE
+// UPDATE BUSINESS
 // ======================================================
 
 export const updateBusiness = async (
     id: string,
     ownerId: string,
-    data: Partial<CreateBusinessInput>
+    data: UpdateBusinessInput
 ) => {
 
     const business = await getBusinessById(id);
@@ -154,7 +160,7 @@ export const updateBusiness = async (
     // --------------------------------------------------
 
     const allowedFields: Array<
-        keyof CreateBusinessInput
+        keyof UpdateBusinessInput
     > = [
         "name",
         "description",
@@ -190,10 +196,10 @@ export const updateBusiness = async (
     // --------------------------------------------------
 
     /*
-     * We intentionally DO NOT regenerate the slug
+     * The slug is intentionally NOT regenerated
      * when the business name changes.
      *
-     * Public URLs should remain stable.
+     * This keeps public URLs stable.
      */
 
 
@@ -208,7 +214,7 @@ export const updateBusiness = async (
 
 
 // ======================================================
-// DELETE
+// DELETE BUSINESS
 // ======================================================
 
 export const deleteBusiness = async (
@@ -234,6 +240,10 @@ export const deleteBusiness = async (
         );
     }
 
+
+    // --------------------------------------------------
+    // Delete
+    // --------------------------------------------------
 
     await business.deleteOne();
 };
