@@ -92,6 +92,33 @@ export type DocumentType =
 
 
 // ======================================================
+// OPENING HOURS TYPES
+// ======================================================
+
+export interface OpeningHoursInterval {
+    open: string;
+    close: string;
+}
+
+
+export interface OpeningHoursDay {
+    isOpen: boolean;
+    intervals: OpeningHoursInterval[];
+}
+
+
+export interface OpeningHours {
+    monday: OpeningHoursDay;
+    tuesday: OpeningHoursDay;
+    wednesday: OpeningHoursDay;
+    thursday: OpeningHoursDay;
+    friday: OpeningHoursDay;
+    saturday: OpeningHoursDay;
+    sunday: OpeningHoursDay;
+}
+
+
+// ======================================================
 // BUSINESS INTERFACE
 // ======================================================
 
@@ -142,24 +169,25 @@ export interface IBusiness extends Document {
 
         serviceArea: string[];
 
+
         availability?: {
             type: AvailabilityType;
             description?: string;
         };
 
+
+        openingHours?: OpeningHours;
+
+
         pricing?: {
             type: PricingType;
-
             currency: "EUR";
-
             amount?: number;
-
             minAmount?: number;
-
             maxAmount?: number;
-
             description?: string;
         };
+
     };
 
 
@@ -169,9 +197,7 @@ export interface IBusiness extends Document {
 
     images: {
         profile: string;
-
         cover?: string;
-
         gallery: string[];
     };
 
@@ -182,9 +208,7 @@ export interface IBusiness extends Document {
 
     documents: {
         type: DocumentType;
-
         url: string;
-
         name?: string;
     }[];
 
@@ -203,9 +227,9 @@ export interface IBusiness extends Document {
 
         coordinates: {
             lat: number;
-
             lng: number;
         };
+
     };
 
 
@@ -224,6 +248,7 @@ export interface IBusiness extends Document {
         instagram?: string;
 
         whatsapp?: string;
+
     };
 
 
@@ -236,6 +261,7 @@ export interface IBusiness extends Document {
         isLatinoOwned: boolean;
 
         countryOfOrigin?: string;
+
     };
 
 
@@ -257,11 +283,13 @@ export interface IBusiness extends Document {
      */
     menu?: string;
 
+
     /**
      * @deprecated
      * Use profile.pricing instead.
      */
     priceRange?: "$" | "$$" | "$$$";
+
 
     /**
      * @deprecated
@@ -269,11 +297,13 @@ export interface IBusiness extends Document {
      */
     languages: string[];
 
+
     /**
      * @deprecated
      * Use community.isLatinoOwned instead.
      */
     isLatinoOwned: boolean;
+
 
     /**
      * @deprecated
@@ -291,6 +321,7 @@ export interface IBusiness extends Document {
         average: number;
 
         count: number;
+
     };
 
 
@@ -324,11 +355,13 @@ export interface IBusiness extends Document {
             contact: boolean;
 
             activity: boolean;
+
         };
 
         verifiedAt?: Date;
 
         verifiedBy?: mongoose.Types.ObjectId;
+
     };
 
 
@@ -347,6 +380,7 @@ export interface IBusiness extends Document {
         rejectionReason?: ModerationRejectionReason;
 
         rejectionComment?: string;
+
     };
 
 
@@ -368,6 +402,7 @@ export interface IBusiness extends Document {
     createdAt: Date;
 
     updatedAt: Date;
+
 }
 
 
@@ -377,7 +412,9 @@ export interface IBusiness extends Document {
 
 const AvailabilitySchema = new Schema(
     {
+
         type: {
+
             type: String,
 
             enum: [
@@ -388,12 +425,139 @@ const AvailabilitySchema = new Schema(
             ],
 
             required: true,
+
         },
 
+
         description: {
+
             type: String,
+
         },
+
     },
+
+    {
+        _id: false,
+    }
+);
+
+
+// ======================================================
+// OPENING HOURS INTERVAL SCHEMA
+// ======================================================
+
+const OpeningHoursIntervalSchema = new Schema(
+    {
+
+        open: {
+            type: String,
+            required: true,
+        },
+
+        close: {
+            type: String,
+            required: true,
+        },
+
+    },
+
+    {
+        _id: false,
+    }
+);
+
+
+// ======================================================
+// OPENING HOURS DAY SCHEMA
+// ======================================================
+
+const OpeningHoursDaySchema = new Schema(
+    {
+
+        isOpen: {
+            type: Boolean,
+            default: false,
+        },
+
+        intervals: {
+            type: [OpeningHoursIntervalSchema],
+            default: [],
+        },
+
+    },
+
+    {
+        _id: false,
+    }
+);
+
+
+// ======================================================
+// OPENING HOURS SCHEMA
+// ======================================================
+
+const OpeningHoursSchema = new Schema(
+    {
+
+        monday: {
+            type: OpeningHoursDaySchema,
+            default: () => ({
+                isOpen: false,
+                intervals: [],
+            }),
+        },
+
+        tuesday: {
+            type: OpeningHoursDaySchema,
+            default: () => ({
+                isOpen: false,
+                intervals: [],
+            }),
+        },
+
+        wednesday: {
+            type: OpeningHoursDaySchema,
+            default: () => ({
+                isOpen: false,
+                intervals: [],
+            }),
+        },
+
+        thursday: {
+            type: OpeningHoursDaySchema,
+            default: () => ({
+                isOpen: false,
+                intervals: [],
+            }),
+        },
+
+        friday: {
+            type: OpeningHoursDaySchema,
+            default: () => ({
+                isOpen: false,
+                intervals: [],
+            }),
+        },
+
+        saturday: {
+            type: OpeningHoursDaySchema,
+            default: () => ({
+                isOpen: false,
+                intervals: [],
+            }),
+        },
+
+        sunday: {
+            type: OpeningHoursDaySchema,
+            default: () => ({
+                isOpen: false,
+                intervals: [],
+            }),
+        },
+
+    },
+
     {
         _id: false,
     }
@@ -406,7 +570,9 @@ const AvailabilitySchema = new Schema(
 
 const PricingSchema = new Schema(
     {
+
         type: {
+
             type: String,
 
             enum: [
@@ -417,38 +583,56 @@ const PricingSchema = new Schema(
             ],
 
             required: true,
+
         },
 
+
         currency: {
+
             type: String,
 
             enum: ["EUR"],
 
             default: "EUR",
+
         },
+
 
         amount: {
+
             type: Number,
 
             min: 0,
+
         },
+
 
         minAmount: {
+
             type: Number,
 
             min: 0,
+
         },
+
 
         maxAmount: {
+
             type: Number,
 
             min: 0,
+
         },
 
+
         description: {
+
             type: String,
+
         },
+
     },
+
     {
         _id: false,
     }
@@ -461,42 +645,72 @@ const PricingSchema = new Schema(
 
 const ProfileSchema = new Schema(
     {
+
         headline: {
+
             type: String,
+
         },
+
 
         services: {
+
             type: [String],
 
             default: [],
+
         },
+
 
         specialties: {
+
             type: [String],
 
             default: [],
+
         },
+
 
         languages: {
+
             type: [String],
 
             default: [],
+
         },
+
 
         serviceArea: {
+
             type: [String],
 
             default: [],
+
         },
+
 
         availability: {
+
             type: AvailabilitySchema,
+
         },
 
-        pricing: {
-            type: PricingSchema,
+
+        openingHours: {
+
+            type: OpeningHoursSchema,
+
         },
+
+
+        pricing: {
+
+            type: PricingSchema,
+
+        },
+
     },
+
     {
         _id: false,
     }
@@ -509,22 +723,33 @@ const ProfileSchema = new Schema(
 
 const ImagesSchema = new Schema(
     {
+
         profile: {
+
             type: String,
 
             required: true,
+
         },
+
 
         cover: {
+
             type: String,
+
         },
 
+
         gallery: {
+
             type: [String],
 
             default: [],
+
         },
+
     },
+
     {
         _id: false,
     }
@@ -537,7 +762,9 @@ const ImagesSchema = new Schema(
 
 const DocumentSchema = new Schema(
     {
+
         type: {
+
             type: String,
 
             enum: [
@@ -548,18 +775,27 @@ const DocumentSchema = new Schema(
             ],
 
             required: true,
+
         },
 
+
         url: {
+
             type: String,
 
             required: true,
+
         },
 
+
         name: {
+
             type: String,
+
         },
+
     },
+
     {
         _id: false,
     }
@@ -572,30 +808,49 @@ const DocumentSchema = new Schema(
 
 const LocationSchema = new Schema(
     {
+
         address: {
+
             type: String,
+
         },
 
+
         cityId: {
+
             type: String,
 
             required: true,
+
         },
+
 
         country: {
+
             type: String,
+
         },
+
 
         coordinates: {
+
             lat: {
+
                 type: Number,
+
             },
 
+
             lng: {
+
                 type: Number,
+
             },
+
         },
+
     },
+
     {
         _id: false,
     }
@@ -608,6 +863,7 @@ const LocationSchema = new Schema(
 
 const ContactSchema = new Schema(
     {
+
         email: String,
 
         phone: String,
@@ -617,7 +873,9 @@ const ContactSchema = new Schema(
         instagram: String,
 
         whatsapp: String,
+
     },
+
     {
         _id: false,
     }
@@ -630,16 +888,24 @@ const ContactSchema = new Schema(
 
 const CommunitySchema = new Schema(
     {
+
         isLatinoOwned: {
+
             type: Boolean,
 
             default: true,
+
         },
 
+
         countryOfOrigin: {
+
             type: String,
+
         },
+
     },
+
     {
         _id: false,
     }
@@ -658,18 +924,25 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         name: {
+
             type: String,
 
             required: true,
 
             trim: true,
+
         },
+
 
         description: {
+
             type: String,
+
         },
 
+
         slug: {
+
             type: String,
 
             required: true,
@@ -679,6 +952,7 @@ const BusinessSchema = new Schema<IBusiness>(
             index: true,
 
             trim: true,
+
         },
 
 
@@ -687,6 +961,7 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         providerType: {
+
             type: String,
 
             enum: [
@@ -699,9 +974,12 @@ const BusinessSchema = new Schema<IBusiness>(
             required: true,
 
             index: true,
+
         },
 
+
         category: {
+
             type: String,
 
             enum: [
@@ -716,28 +994,36 @@ const BusinessSchema = new Schema<IBusiness>(
             required: true,
 
             index: true,
+
         },
 
+
         subCategory: {
+
             type: String,
 
             enum: [
 
                 // FOOD
+
                 "restaurant",
                 "cafe",
                 "bar",
                 "bakery",
                 "catering",
 
+
                 // ENTERTAINMENT
+
                 "club",
                 "event_venue",
                 "event_organizer",
                 "cultural_center",
                 "dance_school",
 
+
                 // SERVICES
+
                 "beauty_salon",
                 "barbershop",
                 "repair",
@@ -746,23 +1032,31 @@ const BusinessSchema = new Schema<IBusiness>(
                 "photographer",
                 "freelancer",
 
+
                 // SHOPPING
+
                 "latin_store",
                 "supermarket",
                 "clothing",
                 "product_seller",
 
+
                 // EDUCATION
+
                 "language_school",
                 "academy",
                 "private_teacher",
 
+
                 // HEALTH
+
                 "clinic",
                 "gym",
+
             ],
 
             index: true,
+
         },
 
 
@@ -771,6 +1065,7 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         owner: {
+
             type: Schema.Types.ObjectId,
 
             ref: "User",
@@ -778,6 +1073,7 @@ const BusinessSchema = new Schema<IBusiness>(
             required: true,
 
             index: true,
+
         },
 
 
@@ -786,9 +1082,11 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         profile: {
+
             type: ProfileSchema,
 
             default: () => ({}),
+
         },
 
 
@@ -797,9 +1095,11 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         images: {
+
             type: ImagesSchema,
 
             required: true,
+
         },
 
 
@@ -808,9 +1108,11 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         documents: {
+
             type: [DocumentSchema],
 
             default: [],
+
         },
 
 
@@ -819,9 +1121,11 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         location: {
+
             type: LocationSchema,
 
             required: true,
+
         },
 
 
@@ -830,9 +1134,11 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         contact: {
+
             type: ContactSchema,
 
             default: () => ({}),
+
         },
 
 
@@ -841,9 +1147,11 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         community: {
+
             type: CommunitySchema,
 
             default: () => ({}),
+
         },
 
 
@@ -852,9 +1160,11 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         tags: {
+
             type: [String],
 
             default: [],
+
         },
 
 
@@ -864,10 +1174,14 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         menu: {
+
             type: String,
+
         },
 
+
         priceRange: {
+
             type: String,
 
             enum: [
@@ -875,22 +1189,32 @@ const BusinessSchema = new Schema<IBusiness>(
                 "$$",
                 "$$$",
             ],
+
         },
 
+
         languages: {
+
             type: [String],
 
             default: [],
+
         },
 
+
         isLatinoOwned: {
+
             type: Boolean,
 
             default: true,
+
         },
 
+
         countryOfOrigin: {
+
             type: String,
+
         },
 
 
@@ -901,6 +1225,7 @@ const BusinessSchema = new Schema<IBusiness>(
         rating: {
 
             average: {
+
                 type: Number,
 
                 default: 0,
@@ -908,15 +1233,20 @@ const BusinessSchema = new Schema<IBusiness>(
                 min: 0,
 
                 max: 5,
+
             },
 
+
             count: {
+
                 type: Number,
 
                 default: 0,
 
                 min: 0,
+
             },
+
         },
 
 
@@ -925,27 +1255,35 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         likesCount: {
+
             type: Number,
 
             default: 0,
 
             min: 0,
+
         },
+
 
         followersCount: {
+
             type: Number,
 
             default: 0,
 
             min: 0,
+
         },
 
+
         eventsCount: {
+
             type: Number,
 
             default: 0,
 
             min: 0,
+
         },
 
 
@@ -956,6 +1294,7 @@ const BusinessSchema = new Schema<IBusiness>(
         verification: {
 
             status: {
+
                 type: String,
 
                 enum: [
@@ -966,38 +1305,56 @@ const BusinessSchema = new Schema<IBusiness>(
                 ],
 
                 default: "unverified",
+
             },
+
 
             checks: {
 
                 identity: {
+
                     type: Boolean,
 
                     default: false,
+
                 },
+
 
                 contact: {
+
                     type: Boolean,
 
                     default: false,
+
                 },
+
 
                 activity: {
+
                     type: Boolean,
 
                     default: false,
+
                 },
+
             },
+
 
             verifiedAt: {
+
                 type: Date,
+
             },
 
+
             verifiedBy: {
+
                 type: Schema.Types.ObjectId,
 
                 ref: "User",
+
             },
+
         },
 
 
@@ -1006,9 +1363,11 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         moderation: {
+
             type: ModerationSchema,
 
             default: () => ({}),
+
         },
 
 
@@ -1017,18 +1376,25 @@ const BusinessSchema = new Schema<IBusiness>(
         // ==================================================
 
         isFeatured: {
+
             type: Boolean,
 
             default: false,
+
         },
 
+
         visibilityScore: {
+
             type: Number,
 
             default: 0,
+
         },
 
+
         status: {
+
             type: String,
 
             enum: [
@@ -1039,11 +1405,15 @@ const BusinessSchema = new Schema<IBusiness>(
             default: "active",
 
             index: true,
+
         },
+
     },
 
     {
+
         timestamps: true,
+
     }
 );
 
