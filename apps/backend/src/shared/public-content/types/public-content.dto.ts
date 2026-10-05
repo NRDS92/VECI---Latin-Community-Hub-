@@ -55,9 +55,18 @@ export interface PublicBusinessDTO {
 
     description?: string;
 
+    // ==================================================
+    // CLASSIFICATION
+    // ==================================================
+
     category: string;
 
     subCategory?: string;
+
+
+    // ==================================================
+    // LOCATION
+    // ==================================================
 
     cityId: string;
 
@@ -70,9 +79,21 @@ export interface PublicBusinessDTO {
         lng: number;
     };
 
+
+    // ==================================================
+    // IMAGES
+    // ==================================================
+
     image?: string;
 
     coverImage?: string;
+
+    gallery: string[];
+
+
+    // ==================================================
+    // CONTACT
+    // ==================================================
 
     website?: string;
 
@@ -80,7 +101,13 @@ export interface PublicBusinessDTO {
 
     whatsapp?: string;
 
-    profile?: {
+
+    // ==================================================
+    // PROFILE
+    // ==================================================
+
+    profile: {
+
         headline?: string;
 
         services: string[];
@@ -92,17 +119,21 @@ export interface PublicBusinessDTO {
         serviceArea: string[];
 
         availability?: {
+
             type:
                 | "appointment"
                 | "walk_in"
                 | "online"
                 | "flexible";
+
             description?: string;
         };
 
         openingHours?: {
+
             monday: {
                 isOpen: boolean;
+
                 intervals: {
                     open: string;
                     close: string;
@@ -111,6 +142,7 @@ export interface PublicBusinessDTO {
 
             tuesday: {
                 isOpen: boolean;
+
                 intervals: {
                     open: string;
                     close: string;
@@ -119,6 +151,7 @@ export interface PublicBusinessDTO {
 
             wednesday: {
                 isOpen: boolean;
+
                 intervals: {
                     open: string;
                     close: string;
@@ -127,6 +160,7 @@ export interface PublicBusinessDTO {
 
             thursday: {
                 isOpen: boolean;
+
                 intervals: {
                     open: string;
                     close: string;
@@ -135,6 +169,7 @@ export interface PublicBusinessDTO {
 
             friday: {
                 isOpen: boolean;
+
                 intervals: {
                     open: string;
                     close: string;
@@ -143,6 +178,7 @@ export interface PublicBusinessDTO {
 
             saturday: {
                 isOpen: boolean;
+
                 intervals: {
                     open: string;
                     close: string;
@@ -151,6 +187,7 @@ export interface PublicBusinessDTO {
 
             sunday: {
                 isOpen: boolean;
+
                 intervals: {
                     open: string;
                     close: string;
@@ -159,13 +196,47 @@ export interface PublicBusinessDTO {
         };
 
         pricing?: {
-            type: string;
+
+            type:
+                | "fixed"
+                | "hourly"
+                | "starting_at"
+                | "range";
+
+            currency: "EUR";
+
             amount?: number;
+
             minAmount?: number;
+
             maxAmount?: number;
+
             description?: string;
         };
     };
+
+
+    // ==================================================
+    // DOCUMENTS
+    // ==================================================
+
+    documents: {
+
+        type:
+            | "menu"
+            | "catalog"
+            | "portfolio"
+            | "brochure";
+
+        url: string;
+
+        name?: string;
+    }[];
+
+
+    // ==================================================
+    // DISCOVERY
+    // ==================================================
 
     priceRange?:
         | "$"
@@ -176,14 +247,42 @@ export interface PublicBusinessDTO {
 
     languages: string[];
 
+
+    // ==================================================
+    // COMMUNITY
+    // ==================================================
+
     isLatinoOwned: boolean;
 
     countryOfOrigin?: string;
 
+
+    // ==================================================
+    // RATING
+    // ==================================================
+
     rating: {
+
         average: number;
+
         count: number;
     };
+
+
+    // ==================================================
+    // SOCIAL
+    // ==================================================
+
+    likesCount: number;
+
+    followersCount: number;
+
+    eventsCount: number;
+
+
+    // ==================================================
+    // VERIFICATION
+    // ==================================================
 
     verificationStatus:
         | "unverified"

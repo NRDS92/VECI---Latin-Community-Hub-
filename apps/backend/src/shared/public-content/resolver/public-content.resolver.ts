@@ -282,6 +282,11 @@ const toPublicBusinessDTO = (
 ): PublicBusinessDTO => {
 
     return {
+
+        // ==================================================
+        // IDENTITY
+        // ==================================================
+
         id:
             business._id.toString(),
 
@@ -293,11 +298,21 @@ const toPublicBusinessDTO = (
         description:
             business.description,
 
+
+        // ==================================================
+        // CLASSIFICATION
+        // ==================================================
+
         category:
             business.category,
 
         subCategory:
             business.subCategory,
+
+
+        // ==================================================
+        // LOCATION
+        // ==================================================
 
         cityId:
             business.location.cityId,
@@ -311,11 +326,24 @@ const toPublicBusinessDTO = (
         coordinates:
             business.location.coordinates,
 
+
+        // ==================================================
+        // IMAGES
+        // ==================================================
+
         image:
             business.images?.profile,
 
         coverImage:
             business.images?.cover,
+
+        gallery:
+            business.images?.gallery ?? [],
+
+
+        // ==================================================
+        // CONTACT
+        // ==================================================
 
         website:
             business.contact?.website,
@@ -326,7 +354,13 @@ const toPublicBusinessDTO = (
         whatsapp:
             business.contact?.whatsapp,
 
+
+        // ==================================================
+        // PROFILE
+        // ==================================================
+
         profile: {
+
             headline:
                 business.profile?.headline,
 
@@ -352,6 +386,19 @@ const toPublicBusinessDTO = (
                 business.profile?.pricing,
         },
 
+
+        // ==================================================
+        // DOCUMENTS
+        // ==================================================
+
+        documents:
+            business.documents ?? [],
+
+
+        // ==================================================
+        // DISCOVERY
+        // ==================================================
+
         priceRange:
             business.priceRange,
 
@@ -361,19 +408,49 @@ const toPublicBusinessDTO = (
         languages:
             business.languages ?? [],
 
+
+        // ==================================================
+        // COMMUNITY
+        // ==================================================
+
         isLatinoOwned:
             business.isLatinoOwned,
 
         countryOfOrigin:
             business.countryOfOrigin,
 
+
+        // ==================================================
+        // RATING
+        // ==================================================
+
         rating: {
+
             average:
                 business.rating?.average ?? 0,
 
             count:
                 business.rating?.count ?? 0,
         },
+
+
+        // ==================================================
+        // SOCIAL
+        // ==================================================
+
+        likesCount:
+            business.likesCount ?? 0,
+
+        followersCount:
+            business.followersCount ?? 0,
+
+        eventsCount:
+            business.eventsCount ?? 0,
+
+
+        // ==================================================
+        // VERIFICATION
+        // ==================================================
 
         verificationStatus:
             business.verification?.status ??
