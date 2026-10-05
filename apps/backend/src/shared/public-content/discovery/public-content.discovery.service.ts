@@ -121,7 +121,6 @@ const toPublicBusinessDTO = (
 ): PublicBusinessDTO => {
 
     return {
-
         id:
             business._id.toString(),
 
@@ -148,29 +147,58 @@ const toPublicBusinessDTO = (
         address:
             business.location.address,
 
+        coordinates:
+            business.location.coordinates,
+
         image:
-            business.images.profile,
+            business.images?.profile,
 
         coverImage:
-            business.images.cover,
+            business.images?.cover,
 
         website:
-            business.contact.website,
+            business.contact?.website,
 
         instagram:
-            business.contact.instagram,
+            business.contact?.instagram,
 
         whatsapp:
-            business.contact.whatsapp,
+            business.contact?.whatsapp,
+
+        profile: {
+            headline:
+                business.profile?.headline,
+
+            services:
+                business.profile?.services ?? [],
+
+            specialties:
+                business.profile?.specialties ?? [],
+
+            languages:
+                business.profile?.languages ?? [],
+
+            serviceArea:
+                business.profile?.serviceArea ?? [],
+
+            availability:
+                business.profile?.availability,
+
+            openingHours:
+                business.profile?.openingHours,
+
+            pricing:
+                business.profile?.pricing,
+        },
 
         priceRange:
             business.priceRange,
 
         tags:
-            business.tags || [],
+            business.tags ?? [],
 
         languages:
-            business.languages || [],
+            business.languages ?? [],
 
         isLatinoOwned:
             business.isLatinoOwned,
@@ -179,18 +207,16 @@ const toPublicBusinessDTO = (
             business.countryOfOrigin,
 
         rating: {
-
             average:
-                business.rating?.average || 0,
+                business.rating?.average ?? 0,
 
             count:
-                business.rating?.count || 0,
-
+                business.rating?.count ?? 0,
         },
 
         verificationStatus:
-            business.verification.status,
-
+            business.verification?.status ??
+            "unverified",
     };
 
 };
