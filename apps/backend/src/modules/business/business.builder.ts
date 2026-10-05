@@ -69,6 +69,8 @@ export const buildBusiness = ({
 
             availability: data.profile.availability,
 
+            openingHours: data.profile.openingHours,
+
             pricing: data.profile.pricing,
         },
 
