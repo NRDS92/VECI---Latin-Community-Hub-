@@ -47,7 +47,6 @@ export interface PublicEventDTO {
  * internal ownership or administrative data.
  */
 export interface PublicBusinessDTO {
-
     id: string;
 
     slug: string;
@@ -80,6 +79,93 @@ export interface PublicBusinessDTO {
     instagram?: string;
 
     whatsapp?: string;
+
+    profile?: {
+        headline?: string;
+
+        services: string[];
+
+        specialties: string[];
+
+        languages: string[];
+
+        serviceArea: string[];
+
+        availability?: {
+            type:
+                | "appointment"
+                | "walk_in"
+                | "online"
+                | "flexible";
+            description?: string;
+        };
+
+        openingHours?: {
+            monday: {
+                isOpen: boolean;
+                intervals: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+
+            tuesday: {
+                isOpen: boolean;
+                intervals: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+
+            wednesday: {
+                isOpen: boolean;
+                intervals: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+
+            thursday: {
+                isOpen: boolean;
+                intervals: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+
+            friday: {
+                isOpen: boolean;
+                intervals: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+
+            saturday: {
+                isOpen: boolean;
+                intervals: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+
+            sunday: {
+                isOpen: boolean;
+                intervals: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+        };
+
+        pricing?: {
+            type: string;
+            amount?: number;
+            minAmount?: number;
+            maxAmount?: number;
+            description?: string;
+        };
+    };
 
     priceRange?:
         | "$"
