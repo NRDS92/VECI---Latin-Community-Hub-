@@ -29,6 +29,7 @@ export interface IUser extends Document {
   provider: AuthProvider;
   providerId?: string;
   role: "user" | "admin";
+  accountStatus: "active" | "pending_deletion";
   subscription: {
     plan: SubscriptionPlan;
     maxBusinesses: number;
@@ -90,7 +91,13 @@ const UserSchema = new Schema<IUser>(
       enum: ["user", "admin"],
       default: "user",
     },
-
+    accountStatus: {
+      type: String,
+      enum: ["active", "pending_deletion"],
+      default: "active",
+      required: true,
+      index: true,
+    },
     subscription: {
       plan: {
         type: String,
