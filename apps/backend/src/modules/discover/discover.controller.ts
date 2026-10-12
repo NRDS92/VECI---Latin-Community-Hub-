@@ -14,7 +14,6 @@ export const getDiscoverFeed = async (req: Request, res: Response) => {
     const date = req.query.date as string | undefined;
     const city = req.query.city as string | undefined;
     const category = req.query.category as string | undefined;
-    const excludeCategory = req.query.excludeCategory as string | undefined; // 🔥 NEW
     const type = (req.query.type as "all" | "events" | "business") || "events";
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 10;
@@ -26,7 +25,6 @@ export const getDiscoverFeed = async (req: Request, res: Response) => {
       lng,
       city,
       category,
-      excludeCategory, 
       type,
       userId,
       page,

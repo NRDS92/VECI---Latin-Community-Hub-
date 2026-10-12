@@ -1,38 +1,27 @@
 import {
     Event,
 } from "../../../modules/events/event.model";
-
 import {
     MODERATION_STATUS,
 } from "../../constants/moderation";
-
 import {
     PUBLIC_CONTENT_TYPES,
 } from "../../public-content/constants/public-content.types";
-
 import {
     getPublishedEntityIds,
 } from "../eligibility/discoverability.service";
-
 import {
     DiscoveryDateFilter,
 } from "../discovery.types";
 
 
 export interface EventDiscoveryQuery {
-
     city?: string;
-
     category?: string;
-
     search?: string;
-
     date?: DiscoveryDateFilter;
-
     excludeEntityIds?: string[];
-
     limit?: number;
-
 }
 
 
@@ -58,15 +47,10 @@ const escapeRegex = (
 
 /**
  * Build Event-specific discovery filters.
- *
  * This function answers only:
- *
  * "Is this Event eligible for Discovery?"
- *
  * It does NOT answer:
- *
  * "Where should this Event appear?"
- *
  * Ranking belongs to the shared
  * Discovery Engine.
  */
@@ -74,7 +58,6 @@ const buildEventFilters = (
     query: EventDiscoveryQuery,
     publishedEntityIds: string[]
 ): Record<string, unknown> => {
-
     const filters:
         Record<string, unknown> = {
 

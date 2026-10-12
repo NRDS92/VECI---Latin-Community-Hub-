@@ -59,6 +59,7 @@ export const getDiscoverFeed = async ({
   userId,
   page = 1,
   limit = 10,
+  date,
 }: DiscoverParams) => {
 
   /*
@@ -156,10 +157,11 @@ export const getDiscoverFeed = async ({
          *
          * We preserve that behavior here.
          */
-        date: {
-          type:
-            "upcoming",
-        },
+        date: date
+        ? date === "today"
+          ? { type: "today" }
+          : { type: "custom", date }
+        : { type: "upcoming" },
 
       },
 
@@ -272,4 +274,4 @@ export const getDiscoverFeed = async ({
 
   };
 
-};
+  };
