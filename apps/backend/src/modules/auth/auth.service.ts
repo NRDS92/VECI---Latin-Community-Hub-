@@ -1,3 +1,4 @@
+
 import bcrypt from "bcrypt";
 import { User, AUTH_PROVIDERS } from "../users/user.model";
 import { RegisterInput, LoginInput } from "./auth.types";
@@ -5,26 +6,34 @@ import { authenticateGoogleUser } from "./providers/google.provider";
 import { generateJWT } from "../auth/utils/jwt";
 import { AppError } from "../../shared/errors/AppError";
 import { sanitizeUser } from "../../shared/utils/sanitize-user";
-
 import {
     generateVerificationToken,
     generatePasswordResetToken,
 } from "./utils/tokens";
-
 import {
     sendVerificationEmail,
     sendPasswordResetEmail,
 } from "./utils/email";
 
-
-
-
-
+/**
+ * Prevent accounts pending deletion from performing
+ * normal authentication or account operations.
+ */
+const assertAccountActive = (
+    accountStatus: string
+): void => {
+    if (accountStatus === "pending_deletion") {
+        throw new AppError(
+            "Account deletion is pending",
+            403,
+            "ACCOUNT_DELETION_PENDING"
+        );
+    }
+};
 
 export const getCurrentUser = async (
     userId: string
 ) => {
-
     const user = await User.findById(userId);
 
     if (!user) {
@@ -35,24 +44,36 @@ export const getCurrentUser = async (
         );
     }
 
-    return sanitizeUser(user);
+    assertAccountActive(user.accountStatus);
 
+    return sanitizeUser(user);
 };
 
-
-export const registerUser = async (data: RegisterInput) => {
+export const registerUser = async (
+    data: RegisterInput
+) => {
     const { name, email, password, cityId } = data;
 
     if (!email || !password) {
-        throw new AppError("Missing credentials", 400, "VALIDATION_ERROR");
+        throw new AppError(
+            "Missing credentials",
+            400,
+            "VALIDATION_ERROR"
+        );
     }
 
     const emailNormalized = email.toLowerCase().trim();
 
-    const existingUser = await User.findOne({ email: emailNormalized });
+    const existingUser = await User.findOne({
+        email: emailNormalized,
+    });
 
     if (existingUser) {
-        throw new AppError("User already exists", 400, "USER_EXISTS");
+        throw new AppError(
+            "User already exists",
+            400,
+            "USER_EXISTS"
+        );
     }
 
     const passwordHash = await bcrypt.hash(password, 12);
@@ -68,25 +89,51 @@ export const registerUser = async (data: RegisterInput) => {
         isVerified: false,
     });
 
-    await sendVerificationEmail(user.email, verificationToken);
+    await sendVerificationEmail(
+        user.email,
+        verificationToken
+    );
 
     return sanitizeUser(user);
 };
 
-export const loginUser = async (data: LoginInput) => {
+export const loginUser = async (
+    data: LoginInput
+) => {
     const { email, password } = data;
+
     if (!email || !password) {
-        throw new AppError("Missing credentials", 400, "VALIDATION_ERROR");
+        throw new AppError(
+            "Missing credentials",
+            400,
+            "VALIDATION_ERROR"
+        );
     }
+
     const emailNormalized = email.toLowerCase().trim();
-    const user = await User.findOne({ email: emailNormalized });
+
+    const user = await User.findOne({
+        email: emailNormalized,
+    });
+
     if (!user) {
-        throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+        throw new AppError(
+            "Invalid credentials",
+            401,
+            "INVALID_CREDENTIALS"
+        );
     }
-    
+
+    assertAccountActive(user.accountStatus);
+
     if (!user.isVerified) {
-        throw new AppError("Please verify your email", 401, "EMAIL_NOT_VERIFIED");
+        throw new AppError(
+            "Please verify your email",
+            401,
+            "EMAIL_NOT_VERIFIED"
+        );
     }
+
     if (user.provider === AUTH_PROVIDERS.GOOGLE) {
         throw new AppError(
             "This account was created with Google. Please sign in with Google.",
@@ -94,18 +141,30 @@ export const loginUser = async (data: LoginInput) => {
             "GOOGLE_ACCOUNT"
         );
     }
+
     if (!user.passwordHash) {
-    throw new AppError(
-        "Password not available for this account.",
-        401,
-        "INVALID_CREDENTIALS"
-    );
-}
-    const validPassword = await bcrypt.compare(password, user.passwordHash);
-    if (!validPassword) {
-        throw new AppError("Invalid credentials", 401, "INVALID_CREDENTIALS");
+        throw new AppError(
+            "Password not available for this account.",
+            401,
+            "INVALID_CREDENTIALS"
+        );
     }
+
+    const validPassword = await bcrypt.compare(
+        password,
+        user.passwordHash
+    );
+
+    if (!validPassword) {
+        throw new AppError(
+            "Invalid credentials",
+            401,
+            "INVALID_CREDENTIALS"
+        );
+    }
+
     const token = generateJWT(user);
+
     return {
         user: sanitizeUser(user),
         token,
@@ -117,7 +176,6 @@ export const loginWithGoogle = async (
 ) => {
     const googleUser = await authenticateGoogleUser(idToken);
 
-    
     const email = googleUser.email.toLowerCase().trim();
 
     let user = await User.findOne({ email });
@@ -132,6 +190,8 @@ export const loginWithGoogle = async (
             isVerified: true,
         });
     } else {
+        assertAccountActive(user.accountStatus);
+
         if (user.provider === AUTH_PROVIDERS.EMAIL) {
             if (!user.isVerified) {
                 throw new AppError(
@@ -148,12 +208,15 @@ export const loginWithGoogle = async (
             );
         }
 
-        // Compatibilidad con usuarios Google creados antes de agregar providerId
+        // Compatibility with Google users created before providerId existed.
         if (!user.providerId) {
             user.providerId = googleUser.sub;
             await user.save();
         }
     }
+
+    // Also check newly created accounts before issuing a token.
+    assertAccountActive(user.accountStatus);
 
     const token = generateJWT(user);
 
@@ -163,12 +226,22 @@ export const loginWithGoogle = async (
     };
 };
 
-export const verifyEmailToken = async (token: string) => {
-    const user = await User.findOne({ verificationToken: token });
+export const verifyEmailToken = async (
+    token: string
+) => {
+    const user = await User.findOne({
+        verificationToken: token,
+    });
 
     if (!user || !user.verificationToken) {
-        throw new AppError("Invalid or expired token", 400, "INVALID_TOKEN");
+        throw new AppError(
+            "Invalid or expired token",
+            400,
+            "INVALID_TOKEN"
+        );
     }
+
+    assertAccountActive(user.accountStatus);
 
     user.isVerified = true;
     user.verificationToken = undefined;
@@ -178,13 +251,21 @@ export const verifyEmailToken = async (token: string) => {
     return true;
 };
 
-export const deleteUserAccount = async (userId: string) => {
+export const deleteUserAccount = async (
+    userId: string
+) => {
     const user = await User.findById(userId);
 
     if (!user) {
-        throw new AppError("User not found", 404, "NOT_FOUND");
+        throw new AppError(
+            "User not found",
+            404,
+            "NOT_FOUND"
+        );
     }
 
+    // Intentionally unchanged: coordinated account deletion
+    // will be implemented in the dedicated deletion phase.
     await User.findByIdAndDelete(userId);
 
     return true;
@@ -193,19 +274,22 @@ export const deleteUserAccount = async (userId: string) => {
 export const forgotPassword = async (
     email: string
 ) => {
-
     const emailNormalized = email.toLowerCase().trim();
 
     const user = await User.findOne({
         email: emailNormalized,
     });
 
-    // Nunca revelar si el correo existe o no
-    if (!user) {
+    // Keep the response generic to avoid revealing
+    // whether an account exists.
+    if (
+        !user ||
+        user.accountStatus === "pending_deletion"
+    ) {
         return true;
     }
 
-    // Solo las cuentas EMAIL pueden recuperar contraseña
+    // Only email accounts can reset their password.
     if (user.provider !== AUTH_PROVIDERS.EMAIL) {
         return true;
     }
@@ -231,19 +315,22 @@ export const resetPassword = async (
     token: string,
     password: string
 ) => {
-
     const user = await User.findOne({
         passwordResetToken: token,
-        passwordResetExpires: { $gt: new Date() },
+        passwordResetExpires: {
+            $gt: new Date(),
+        },
     });
 
     if (!user) {
         throw new AppError(
-        "Invalid or expired reset token.",
-        400,
-        "INVALID_RESET_TOKEN"
+            "Invalid or expired reset token.",
+            400,
+            "INVALID_RESET_TOKEN"
         );
     }
+
+    assertAccountActive(user.accountStatus);
 
     user.passwordHash = await bcrypt.hash(password, 12);
 
