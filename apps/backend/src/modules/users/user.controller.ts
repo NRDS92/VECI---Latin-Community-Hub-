@@ -3,7 +3,10 @@ import fs from "fs-extra";
 
 import * as usersService from "./user.service";
 
-import { uploadImage } from "../upload/upload.service";
+import {
+    uploadUserProfileImage,
+    deleteImage,
+} from "../upload/upload.service";
 import { User } from "./user.model";
 
 // --------------------------------------------------
@@ -37,6 +40,7 @@ export const toggleFavorite = async (
 // Upload Profile Image
 // --------------------------------------------------
 
+
 export const uploadProfileImage = async (
     req: Request,
     res: Response
@@ -47,20 +51,44 @@ export const uploadProfileImage = async (
         const userId = (req as any).user.id;
 
         if (!file) {
-            throw new Error("No file uploaded");
+            return res.status(400).json({
+                success: false,
+                message: "No file uploaded",
+            });
         }
-
-        const imageUrl = await uploadImage(file.path);
 
         const user = await User.findById(userId);
 
         if (!user) {
-            throw new Error("User not found");
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
         }
 
-        user.profileImage = imageUrl;
+        const uploaded = await uploadUserProfileImage(file.path);
+        const previousPublicId = user.profileImagePublicId;
 
-        await user.save();
+        try {
+            user.profileImage = uploaded.url;
+            user.profileImagePublicId = uploaded.publicId;
+            await user.save();
+        } catch (error) {
+            await deleteImage(uploaded.publicId).catch(() => undefined);
+            throw error;
+        }
+
+        if (
+            previousPublicId &&
+            previousPublicId !== uploaded.publicId
+        ) {
+            await deleteImage(previousPublicId).catch((error) => {
+                console.error(
+                    "Failed to delete previous profile image:",
+                    error
+                );
+            });
+        }
 
         const updatedUser = await usersService.getMe(userId);
 
@@ -68,45 +96,86 @@ export const uploadProfileImage = async (
             success: true,
             data: updatedUser,
         });
-    } catch (error: any) {
-        return res.status(400).json({
+    } catch (error) {
+        console.error("Profile image upload failed:", error);
+
+        return res.status(500).json({
             success: false,
-            message: error.message,
+            message: "Could not update profile image",
         });
     } finally {
         if (file?.path) {
-            await fs.remove(file.path);
+            await fs.remove(file.path).catch(() => undefined);
         }
     }
 };
+
 
 // --------------------------------------------------
 // Update User
 // --------------------------------------------------
 
+
 export const updateUser = async (
-  req: Request,
-  res: Response
+    req: Request,
+    res: Response
 ) => {
-  try {
-    const userId = (req as any).user.id;
+    try {
+        const userId = (req as any).user.id;
+        const body = req.body;
 
-    const updatedUser = await usersService.updateUser(
-      userId,
-      req.body
-    );
+        if (
+            typeof body !== "object" ||
+            body === null ||
+            Array.isArray(body)
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid request body",
+            });
+        }
 
-    res.json({
-      success: true,
-      data: updatedUser,
-    });
-  } catch (error: any) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
+        const allowedFields = [
+            "name",
+            "cityId",
+            "originCountry",
+            "bio",
+            "onboardingCompleted",
+        ];
+
+        const unexpectedFields = Object.keys(body).filter(
+            (key) => !allowedFields.includes(key)
+        );
+
+        if (unexpectedFields.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Unsupported profile fields",
+            });
+        }
+
+        const updatedUser = await usersService.updateUser(
+            userId,
+            body
+        );
+
+        return res.json({
+            success: true,
+            data: updatedUser,
+        });
+    } catch (error) {
+        console.error("Profile update failed:", error);
+
+        return res.status(400).json({
+            success: false,
+            message:
+                error instanceof Error
+                    ? error.message
+                    : "Could not update profile",
+        });
+    }
 };
+
 
 // --------------------------------------------------
 // Get Me

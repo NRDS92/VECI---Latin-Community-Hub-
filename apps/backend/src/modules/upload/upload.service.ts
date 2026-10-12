@@ -1,5 +1,5 @@
-import { v2 as cloudinary } from "cloudinary";
 
+import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,
@@ -7,6 +7,8 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Existing event/business image upload.
+// Keep returning a URL to preserve compatibility.
 export const uploadImage = async (filePath: string) => {
     const result = await cloudinary.uploader.upload(filePath, {
         folder: "veci/events",
@@ -14,6 +16,19 @@ export const uploadImage = async (filePath: string) => {
     });
 
     return result.secure_url;
+};
+
+// New user profile image upload.
+export const uploadUserProfileImage = async (filePath: string) => {
+    const result = await cloudinary.uploader.upload(filePath, {
+        folder: "veci/users/profiles",
+        resource_type: "image",
+    });
+
+    return {
+        url: result.secure_url,
+        publicId: result.public_id,
+    };
 };
 
 export const uploadPdf = async (filePath: string) => {
@@ -34,4 +49,19 @@ export const deletePdf = async (publicId: string) => {
         type: "upload",
         invalidate: true,
     });
+};
+
+// Delete an image using its Cloudinary public ID.
+export const deleteImage = async (publicId: string) => {
+    if (!publicId) return;
+
+    const result = await cloudinary.uploader.destroy(publicId, {
+        resource_type: "image",
+        type: "upload",
+        invalidate: true,
+    });
+
+    if (result.result !== "ok" && result.result !== "not found") {
+        throw new Error("Could not delete image from Cloudinary");
+    }
 };

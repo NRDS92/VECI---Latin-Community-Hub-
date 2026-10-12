@@ -64,49 +64,55 @@ export const toggleFavorite = async (
 // --------------------------------------------------
 
 export const updateUser = async (
-  userId: string,
-  data: {
-    name?: string;
-    cityId?: string;
-    originCountry?: string;
-    bio?: string;
-    profileImage?: string;
-    onboardingCompleted?: boolean;
-  }
+    userId: string,
+    data: {
+        name?: string;
+        cityId?: string;
+        originCountry?: string;
+        bio?: string;
+        onboardingCompleted?: boolean;
+    }
 ) => {
-  const user = await User.findById(userId);
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  if (data.name !== undefined) {
-    user.name = data.name.trim();
-  }
-
-  if (data.cityId !== undefined) {
-    user.cityId = data.cityId;
-  }
-
-  if (data.originCountry !== undefined) {
-    user.originCountry = data.originCountry.toUpperCase().trim();
-  }
-
-  if (data.bio !== undefined) {
-    user.bio = data.bio.trim();
-  }
-
-  if (data.profileImage !== undefined) {
-    user.profileImage = data.profileImage;
-  }
-
-  if (data.onboardingCompleted !== undefined) {
-    user.onboardingCompleted = data.onboardingCompleted;
-  }
-
-  await user.save();
-
-  return sanitizeUser(user);
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new Error("User not found");
+    }
+    if (data.name !== undefined) {
+        const name = data.name.trim();
+        if (!name || name.length > 100) {
+            throw new Error("Name must be between 1 and 100 characters");
+        }
+        user.name = name;
+    }
+    if (data.cityId !== undefined) {
+        const cityId = data.cityId.trim();
+        if (!cityId) {
+            throw new Error("City is required");
+        }
+        user.cityId = cityId;
+    }
+    if (data.originCountry !== undefined) {
+        const country = data.originCountry.trim();
+        if (country && !/^[a-zA-Z]{2}$/.test(country)) {
+            throw new Error("Origin country must be a two-letter country code");
+        }
+        user.originCountry = country.toUpperCase();
+    }
+    if (data.bio !== undefined) {
+        const bio = data.bio.trim();
+        if (bio.length > 500) {
+            throw new Error("Bio cannot exceed 500 characters");
+        }
+        user.bio = bio;
+    }
+    if (data.onboardingCompleted !== undefined) {
+        if (typeof data.onboardingCompleted !== "boolean") {
+            throw new Error("Invalid onboardingCompleted value");
+        }
+        user.onboardingCompleted = data.onboardingCompleted;
+    }
+    await user.save();
+    return sanitizeUser(user);
 };
 
 // --------------------------------------------------
