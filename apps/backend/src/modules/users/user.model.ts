@@ -25,34 +25,25 @@ export type SubscriptionPlan =
 export interface IUser extends Document {
   name: string;
   email: string;
-
   passwordHash?: string;
-
   provider: AuthProvider;
   providerId?: string;
-
   role: "user" | "admin";
-
   subscription: {
     plan: SubscriptionPlan;
     maxBusinesses: number;
   };
-
   cityId?: string;
   originCountry?: string;
   profileImage?: string;
+  profileImagePublicId?: string;
   bio?: string;
-
   favorites: mongoose.Types.ObjectId[];
-
   createdAt: Date;
   updatedAt: Date;
-
   isVerified: boolean;
   verificationToken?: string;
-
   onboardingCompleted: boolean;
-
   passwordResetToken?: string;
   passwordResetExpires?: Date;
 }
@@ -64,7 +55,10 @@ const UserSchema = new Schema<IUser>(
       required: true,
       trim: true,
     },
-
+    profileImagePublicId: {
+        type: String,
+        required: false,
+    },
     email: {
       type: String,
       required: true,
