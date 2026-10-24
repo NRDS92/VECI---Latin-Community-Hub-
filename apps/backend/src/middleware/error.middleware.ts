@@ -79,17 +79,36 @@ export const errorMiddleware = (
   }
 
   // MongoDB duplicate key
-  const mongoError = error as Error & {
+// MongoDB duplicate key
+const mongoError = error as Error & {
     code?: number;
-  };
+    keyPattern?: Record<string, number>;
+    keyValue?: Record<string, unknown>;
+};
 
-  if (mongoError.code === 11000) {
+if (mongoError.code === 11000) {
+    const duplicatedFields = {
+        ...mongoError.keyPattern,
+        ...mongoError.keyValue,
+    };
+
+    const isEmailDuplicate =
+        "email" in duplicatedFields;
+
+    if (isEmailDuplicate) {
+        return res.status(409).json({
+            success: false,
+            message: "An account with this email already exists.",
+            code: "EMAIL_ALREADY_REGISTERED",
+        });
+    }
+
     return res.status(409).json({
-      success: false,
-      message: "Duplicate field value",
-      code: "DUPLICATE_ERROR",
+        success: false,
+        message: "A resource with this value already exists.",
+        code: "DUPLICATE_ERROR",
     });
-  }
+}
 
   // JWT errors
   if (error instanceof jwt.TokenExpiredError) {
