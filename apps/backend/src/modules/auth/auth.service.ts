@@ -53,7 +53,6 @@ export const registerUser = async (
     data: RegisterInput
 ) => {
     const { name, email, password, cityId } = data;
-
     if (!email || !password) {
         throw new AppError(
             "Missing credentials",
@@ -61,24 +60,19 @@ export const registerUser = async (
             "VALIDATION_ERROR"
         );
     }
-
     const emailNormalized = email.toLowerCase().trim();
-
     const existingUser = await User.findOne({
         email: emailNormalized,
     });
-
     if (existingUser) {
         throw new AppError(
-            "User already exists",
-            400,
-            "USER_EXISTS"
+            "An account with this email already exists.",
+            409,
+            "EMAIL_ALREADY_REGISTERED"
         );
     }
-
     const passwordHash = await bcrypt.hash(password, 12);
     const verificationToken = generateVerificationToken();
-
     const user = await User.create({
         name,
         email: emailNormalized,
@@ -88,12 +82,10 @@ export const registerUser = async (
         verificationToken,
         isVerified: false,
     });
-
     await sendVerificationEmail(
         user.email,
         verificationToken
     );
-
     return sanitizeUser(user);
 };
 
