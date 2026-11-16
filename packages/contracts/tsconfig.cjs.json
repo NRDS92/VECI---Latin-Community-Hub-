@@ -2,22 +2,16 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "rootDir": "./src",
     "outDir": "./dist/cjs",
     "declaration": true,
     "declarationMap": false,
     "sourceMap": true,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
+    "noEmitOnError": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "src/**/*.test.ts",
-    "dist",
-    "node_modules"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "dist", "node_modules"]
 }
-
