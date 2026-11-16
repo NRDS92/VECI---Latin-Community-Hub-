@@ -19,76 +19,129 @@ export const toPublicBusiness = (
     business: BusinessDocument,
     slug: string
 ): PublicBusiness => {
+    const source = business.toObject({
+        depopulate: true,
+        flattenMaps: true,
+    });
+
     const isLatinoOwned =
-        business.community?.isLatinoOwned ??
-        business.isLatinoOwned ??
+        source.community?.isLatinoOwned ??
+        source.isLatinoOwned ??
         true;
 
     const countryOfOrigin =
-        business.community?.countryOfOrigin ??
-        business.countryOfOrigin;
+        source.community?.countryOfOrigin ??
+        source.countryOfOrigin;
 
     const verificationStatus =
-        business.verification?.status ??
+        source.verification?.status ??
         "unverified";
+
+    // Normalize opening hours into plain objects.
+    const openingHours = source.profile?.openingHours
+        ? {
+            monday: {
+                isOpen: source.profile.openingHours.monday.isOpen,
+                intervals: source.profile.openingHours.monday.intervals.map(
+                    ({ open, close }) => ({ open, close })
+                ),
+            },
+            tuesday: {
+                isOpen: source.profile.openingHours.tuesday.isOpen,
+                intervals: source.profile.openingHours.tuesday.intervals.map(
+                    ({ open, close }) => ({ open, close })
+                ),
+            },
+            wednesday: {
+                isOpen: source.profile.openingHours.wednesday.isOpen,
+                intervals: source.profile.openingHours.wednesday.intervals.map(
+                    ({ open, close }) => ({ open, close })
+                ),
+            },
+            thursday: {
+                isOpen: source.profile.openingHours.thursday.isOpen,
+                intervals: source.profile.openingHours.thursday.intervals.map(
+                    ({ open, close }) => ({ open, close })
+                ),
+            },
+            friday: {
+                isOpen: source.profile.openingHours.friday.isOpen,
+                intervals: source.profile.openingHours.friday.intervals.map(
+                    ({ open, close }) => ({ open, close })
+                ),
+            },
+            saturday: {
+                isOpen: source.profile.openingHours.saturday.isOpen,
+                intervals: source.profile.openingHours.saturday.intervals.map(
+                    ({ open, close }) => ({ open, close })
+                ),
+            },
+            sunday: {
+                isOpen: source.profile.openingHours.sunday.isOpen,
+                intervals: source.profile.openingHours.sunday.intervals.map(
+                    ({ open, close }) => ({ open, close })
+                ),
+            },
+        }
+        : undefined;
 
     const publicBusiness = {
         // IDENTITY
-        id: business._id.toString(),
+        id: source._id.toString(),
         slug,
-        name: business.name,
-        description: business.description,
+        name: source.name,
+        description: source.description,
 
         // CLASSIFICATION
-        providerType: business.providerType,
-        category: business.category,
-        subCategory: business.subCategory,
+        providerType: source.providerType,
+        category: source.category,
+        subCategory: source.subCategory,
 
         // LOCATION
-        cityId: business.location.cityId,
-        country: business.location.country,
-        address: business.location.address,
-        coordinates: business.location.coordinates,
+        cityId: source.location.cityId,
+        country: source.location.country,
+        address: source.location.address,
+        coordinates: source.location.coordinates,
 
         // IMAGES
-        image: business.images?.profile,
-        coverImage: business.images?.cover,
-        gallery: business.images?.gallery ?? [],
+        image: source.images?.profile,
+        coverImage: source.images?.cover,
+        gallery: source.images?.gallery ?? [],
 
         // CONTACT
         contact: {
-            email: business.contact?.email,
-            phone: business.contact?.phone,
-            website: business.contact?.website,
-            instagram: business.contact?.instagram,
-            whatsapp: business.contact?.whatsapp,
+            email: source.contact?.email,
+            phone: source.contact?.phone,
+            website: source.contact?.website,
+            instagram: source.contact?.instagram,
+            whatsapp: source.contact?.whatsapp,
         },
 
         // LEGACY CONTACT FIELDS
-        website: business.contact?.website,
-        instagram: business.contact?.instagram,
-        whatsapp: business.contact?.whatsapp,
+        website: source.contact?.website,
+        instagram: source.contact?.instagram,
+        whatsapp: source.contact?.whatsapp,
 
         // PROFILE
         profile: {
-            headline: business.profile?.headline,
-            services: business.profile?.services ?? [],
-            specialties: business.profile?.specialties ?? [],
-            languages: business.profile?.languages ?? [],
-            serviceArea: business.profile?.serviceArea ?? [],
-            availability: business.profile?.availability,
-            openingHours: business.profile?.openingHours,
-            pricing: business.profile?.pricing,
+            headline: source.profile?.headline,
+            services: source.profile?.services ?? [],
+            specialties: source.profile?.specialties ?? [],
+            languages: source.profile?.languages ?? [],
+            serviceArea: source.profile?.serviceArea ?? [],
+            availability: source.profile?.availability,
+            openingHours,
+            pricing: source.profile?.pricing,
         },
 
         // DOCUMENTS & MENU
-        documents: business.documents ?? [],
-        menu: business.menu,
-        priceRange: business.priceRange,
+        documents: source.documents ?? [],
+        menu: source.menu,
+        priceRange: source.priceRange,
 
         // DISCOVERY
-        tags: business.tags ?? [],
-        languages: business.languages ?? [],
+        tags: source.tags ?? [],
+        languages: source.languages ?? [],
 
         // COMMUNITY
         community: {
@@ -102,25 +155,25 @@ export const toPublicBusiness = (
 
         // RATING
         rating: {
-            average: business.rating?.average ?? 0,
-            count: business.rating?.count ?? 0,
+            average: source.rating?.average ?? 0,
+            count: source.rating?.count ?? 0,
         },
 
         // SOCIAL
-        likesCount: business.likesCount ?? 0,
-        followersCount: business.followersCount ?? 0,
-        eventsCount: business.eventsCount ?? 0,
+        likesCount: source.likesCount ?? 0,
+        followersCount: source.followersCount ?? 0,
+        eventsCount: source.eventsCount ?? 0,
 
         // VERIFICATION
         verification: {
             status: verificationStatus,
             checks: {
                 identity:
-                    business.verification?.checks?.identity ?? false,
+                    source.verification?.checks?.identity ?? false,
                 contact:
-                    business.verification?.checks?.contact ?? false,
+                    source.verification?.checks?.contact ?? false,
                 activity:
-                    business.verification?.checks?.activity ?? false,
+                    source.verification?.checks?.activity ?? false,
             },
         },
 
@@ -128,10 +181,10 @@ export const toPublicBusiness = (
         verificationStatus,
 
         // STATUS & METADATA
-        isFeatured: business.isFeatured ?? false,
-        status: business.status ?? "active",
-        createdAt: business.createdAt.toISOString(),
-        updatedAt: business.updatedAt.toISOString(),
+        isFeatured: source.isFeatured ?? false,
+        status: source.status ?? "active",
+        createdAt: source.createdAt.toISOString(),
+        updatedAt: source.updatedAt.toISOString(),
     };
 
     // Validate the public API boundary.

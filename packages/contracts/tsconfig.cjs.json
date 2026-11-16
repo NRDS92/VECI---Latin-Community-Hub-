@@ -10,7 +10,8 @@
     "declarationMap": false,
     "sourceMap": true,
     "verbatimModuleSyntax": false,
-    "noEmitOnError": true
+    "noEmitOnError": true,
+    "composite": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.test.ts", "dist", "node_modules"]

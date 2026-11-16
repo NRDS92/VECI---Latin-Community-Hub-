@@ -1,18 +1,11 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "strict": true,
-    "skipLibCheck": true,
-    "verbatimModuleSyntax": true,
-    "noEmitOnError": true
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["dist", "node_modules"]
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.esm.json"
+    },
+    {
+      "path": "./tsconfig.cjs.json"
+    }
+  ]
 }
