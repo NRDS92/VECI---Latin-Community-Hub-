@@ -79,18 +79,17 @@ export const errorMiddleware = (
   }
 
   // MongoDB duplicate key
-// MongoDB duplicate key
-const mongoError = error as Error & {
-    code?: number;
-    keyPattern?: Record<string, number>;
-    keyValue?: Record<string, unknown>;
-};
+  const mongoError = error as Error & {
+      code?: number;
+      keyPattern?: Record<string, number>;
+      keyValue?: Record<string, unknown>;
+  };
 
-if (mongoError.code === 11000) {
-    const duplicatedFields = {
-        ...mongoError.keyPattern,
-        ...mongoError.keyValue,
-    };
+  if (mongoError.code === 11000) {
+      const duplicatedFields = {
+          ...mongoError.keyPattern,
+          ...mongoError.keyValue,
+      };
 
     const isEmailDuplicate =
         "email" in duplicatedFields;

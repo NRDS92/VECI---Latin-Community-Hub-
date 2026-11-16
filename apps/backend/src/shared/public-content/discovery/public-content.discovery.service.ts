@@ -1,62 +1,46 @@
+
 import {
     discover,
 } from "../../discovery/discovery.service";
-
 import {
     DiscoveryRequest,
 } from "../../discovery/discovery.types";
-
 import {
     Publication,
 } from "../publication/publication.model";
-
 import {
     PUBLICATION_STATUS,
 } from "../publication/publication-status";
-
 import {
     PUBLIC_CONTENT_TYPES,
 } from "../constants/public-content.types";
-
-import {
-    PublicEventDTO,
-    PublicBusinessDTO,
-} from "../types/public-content.dto";
-
+import type {
+    PublicEvent,
+    PublicBusiness,
+} from "@veci/contracts";
 import type {
     EventDocument,
 } from "../../../modules/events/event.model";
-
 import type {
     BusinessDocument,
 } from "../../../modules/business/business.model";
-
+import {
+    toPublicBusiness,
+} from "../mappers/business.mapper";
 
 export interface RelatedEventsOptions {
-
     cityId?: string;
-
     category?: string;
-
     excludeEntityId?: string;
-
     limit?: number;
-
 }
-
 
 export interface RelatedBusinessesOptions {
-
     cityId?: string;
-
     category?: string;
-
     excludeEntityId?: string;
-
     limit?: number;
-
 }
-
 
 /**
  * Convert a discovered Event into
@@ -68,8 +52,7 @@ export interface RelatedBusinessesOptions {
 const toPublicEventDTO = (
     event: EventDocument,
     slug: string
-): PublicEventDTO => {
-    
+): PublicEvent => {
     return {
         id: event._id.toString(),
         slug,
@@ -79,8 +62,8 @@ const toPublicEventDTO = (
         eventType: event.eventType,
         cityId: event.cityId,
         address: event.address,
-        dateStart: event.dateStart,
-        dateEnd: event.dateEnd,
+        dateStart: event.dateStart.toISOString(),
+        dateEnd: event.dateEnd?.toISOString(),
         images: event.images ?? [],
         location: event.location
             ? {
@@ -107,659 +90,177 @@ const toPublicEventDTO = (
     };
 };
 
-
-/**
- * Convert a discovered Business into
- * its public representation.
- *
- * Only information intended for the
- * public Business page is exposed here.
- */
-const toPublicBusinessDTO = (
-    business: BusinessDocument,
-    slug: string
-): PublicBusinessDTO => {
-
-    return {
-
-        // ==================================================
-        // IDENTITY
-        // ==================================================
-
-        id:
-            business._id.toString(),
-
-        slug,
-
-        name:
-            business.name,
-
-        description:
-            business.description,
-
-
-        // ==================================================
-        // CLASSIFICATION
-        // ==================================================
-
-        category:
-            business.category,
-
-        subCategory:
-            business.subCategory,
-
-
-        // ==================================================
-        // LOCATION
-        // ==================================================
-
-        cityId:
-            business.location.cityId,
-
-        country:
-            business.location.country,
-
-        address:
-            business.location.address,
-
-        coordinates:
-            business.location.coordinates,
-
-
-        // ==================================================
-        // IMAGES
-        // ==================================================
-
-        image:
-            business.images?.profile,
-
-        coverImage:
-            business.images?.cover,
-
-        gallery:
-            business.images?.gallery ?? [],
-
-
-        // ==================================================
-        // CONTACT
-        // ==================================================
-
-        website:
-            business.contact?.website,
-
-        instagram:
-            business.contact?.instagram,
-
-        whatsapp:
-            business.contact?.whatsapp,
-
-
-        // ==================================================
-        // PROFILE
-        // ==================================================
-
-        profile: {
-
-            headline:
-                business.profile?.headline,
-
-            services:
-                business.profile?.services ?? [],
-
-            specialties:
-                business.profile?.specialties ?? [],
-
-            languages:
-                business.profile?.languages ?? [],
-
-            serviceArea:
-                business.profile?.serviceArea ?? [],
-
-            availability:
-                business.profile?.availability,
-
-            openingHours:
-                business.profile?.openingHours,
-
-            pricing:
-                business.profile?.pricing,
-        },
-
-
-        // ==================================================
-        // DOCUMENTS
-        // ==================================================
-
-        documents:
-            business.documents ?? [],
-
-
-        // ==================================================
-        // DISCOVERY
-        // ==================================================
-
-        priceRange:
-            business.priceRange,
-
-        tags:
-            business.tags ?? [],
-
-        languages:
-            business.languages ?? [],
-
-
-        // ==================================================
-        // COMMUNITY
-        // ==================================================
-
-        isLatinoOwned:
-            business.isLatinoOwned,
-
-        countryOfOrigin:
-            business.countryOfOrigin,
-
-
-        // ==================================================
-        // RATING
-        // ==================================================
-
-        rating: {
-
-            average:
-                business.rating?.average ?? 0,
-
-            count:
-                business.rating?.count ?? 0,
-        },
-
-
-        // ==================================================
-        // SOCIAL
-        // ==================================================
-
-        likesCount:
-            business.likesCount ?? 0,
-
-        followersCount:
-            business.followersCount ?? 0,
-
-        eventsCount:
-            business.eventsCount ?? 0,
-
-
-        // ==================================================
-        // VERIFICATION
-        // ==================================================
-
-        verificationStatus:
-            business.verification?.status ??
-            "unverified",
-    };
-};
-
-
 /**
  * Get related public Events.
  *
- * IMPORTANT:
- *
- * This function does NOT implement
- * its own discoverability rules.
- *
- * Discovery is delegated to the
- * shared Discovery Engine.
- *
- * The public-content layer is only
- * responsible for:
- *
- * - requesting public Events
- * - resolving their public slugs
- * - converting them into Public DTOs
+ * Discovery is delegated to the shared Discovery Engine.
  */
 export const getRelatedEvents = async (
     options: RelatedEventsOptions = {}
-): Promise<PublicEventDTO[]> => {
-
+): Promise<PublicEvent[]> => {
     const {
         cityId,
-
         category,
-
         excludeEntityId,
-
         limit = 6,
-
     } = options;
 
+    const safeLimit = Math.min(
+        Math.max(limit, 1),
+        20
+    );
 
-    /*
-     * Protect the endpoint from
-     * unreasonable limits.
-     */
-    const safeLimit =
-        Math.min(
-            Math.max(
-                limit,
-                1
-            ),
-            20
-        );
-
-
-    /*
-     * Build the shared Discovery request.
-     *
-     * Public Discovery uses the same
-     * discoverability rules as every
-     * other consumer of Discovery.
-     */
     const request: DiscoveryRequest = {
-
         query: {
-
-            city:
-                cityId,
-
+            city: cityId,
             category,
-
-            contentTypes: [
-                "event",
-            ],
-
-            /*
-             * Related events should be
-             * upcoming by default.
-             */
+            contentTypes: ["event"],
             date: {
-                type:
-                    "upcoming",
+                type: "upcoming",
             },
-
         },
-
-
-        /*
-         * Public Discovery has no user
-         * personalization.
-         */
         context: {},
-
-
         options: {
-
-            visibility:
-                "public",
-
-            ranking:
-                "public",
-
-            limit:
-                safeLimit,
-
-            excludeEntityIds:
-                excludeEntityId
-                    ? [
-                        excludeEntityId,
-                    ]
-                    : undefined,
-
+            visibility: "public",
+            ranking: "public",
+            limit: safeLimit,
+            excludeEntityIds: excludeEntityId
+                ? [excludeEntityId]
+                : undefined,
         },
-
     };
 
+    const result = await discover(request);
 
-    /*
-     * Execute the shared Discovery Engine.
-     */
-    const result =
-        await discover(
-            request
-        );
+    const events = result.items
+        .filter(item => item.type === "event")
+        .map(item => item.entity as EventDocument);
 
-
-    /*
-     * Discovery returns normalized
-     * domain entities.
-     *
-     * We only requested Events above,
-     * therefore every item here is an Event.
-     */
-    const events =
-        result.items
-            .filter(
-                item =>
-                    item.type === "event"
-            )
-            .map(
-                item =>
-                    item.entity as EventDocument
-            );
-
-
-    if (
-        events.length === 0
-    ) {
-
+    if (events.length === 0) {
         return [];
-
     }
 
+    const eventIds = events.map(
+        event => event._id.toString()
+    );
 
-    /*
-     * Resolve the public Publication
-     * for the discovered Events.
-     */
-    const eventIds =
-        events.map(
-            event =>
-                event._id.toString()
-        );
+    const publications = await Publication.find({
+        entityType: PUBLIC_CONTENT_TYPES.EVENT,
+        entityId: {
+            $in: eventIds,
+        },
+        status: PUBLICATION_STATUS.PUBLISHED,
+    })
+        .select("entityId slug")
+        .lean();
 
+    const publicationMap = new Map(
+        publications.map(publication => [
+            publication.entityId,
+            publication.slug,
+        ])
+    );
 
-    const publications =
-        await Publication.find({
-
-            entityType:
-                PUBLIC_CONTENT_TYPES.EVENT,
-
-            entityId: {
-                $in:
-                    eventIds,
-            },
-
-            status:
-                PUBLICATION_STATUS.PUBLISHED,
-
-        })
-            .select(
-                "entityId slug"
-            )
-            .lean();
-
-
-    /*
-     * Create a fast lookup map:
-     *
-     * Event ID → public slug
-     */
-    const publicationMap =
-        new Map(
-            publications.map(
-                publication => [
-
-                    publication.entityId,
-
-                    publication.slug,
-
-                ]
-            )
-        );
-
-
-    /*
-     * Convert Events into their
-     * public representation.
-     */
     return events
-        .map(
-            event => {
+        .map(event => {
+            const slug = publicationMap.get(
+                event._id.toString()
+            );
 
-                const slug =
-                    publicationMap.get(
-                        event._id.toString()
-                    );
-
-
-                if (!slug) {
-
-                    return null;
-
-                }
-
-
-                return toPublicEventDTO(
-                    event,
-                    slug
-                );
-
+            if (!slug) {
+                return null;
             }
-        )
+
+            return toPublicEventDTO(event, slug);
+        })
         .filter(
-            (
-                event
-            ): event is PublicEventDTO =>
+            (event): event is PublicEvent =>
                 event !== null
         );
-
 };
-
 
 /**
  * Get related public Businesses.
  *
- * IMPORTANT:
- *
- * This function does NOT implement
- * its own discoverability rules.
- *
- * Discovery is delegated to the
- * shared Discovery Engine.
- *
- * The public-content layer is only
- * responsible for:
- *
- * - requesting public Businesses
- * - resolving their public slugs
- * - converting them into Public DTOs
+ * Discovery is delegated to the shared Discovery Engine.
  */
 export const getRelatedBusinesses = async (
     options: RelatedBusinessesOptions = {}
-): Promise<PublicBusinessDTO[]> => {
-
+): Promise<PublicBusiness[]> => {
     const {
         cityId,
-
         category,
-
         excludeEntityId,
-
         limit = 6,
-
     } = options;
 
+    const safeLimit = Math.min(
+        Math.max(limit, 1),
+        20
+    );
 
-    /*
-     * Protect the endpoint from
-     * unreasonable limits.
-     */
-    const safeLimit =
-        Math.min(
-            Math.max(
-                limit,
-                1
-            ),
-            20
-        );
-
-
-    /*
-     * Build the shared Discovery request.
-     */
     const request: DiscoveryRequest = {
-
         query: {
-
-            city:
-                cityId,
-
+            city: cityId,
             category,
-
-            contentTypes: [
-                "business",
-            ],
-
+            contentTypes: ["business"],
         },
-
-
-        /*
-         * Public Discovery has no user
-         * personalization.
-         */
         context: {},
-
-
         options: {
-
-            visibility:
-                "public",
-
-            ranking:
-                "public",
-
-            limit:
-                safeLimit,
-
-            excludeEntityIds:
-                excludeEntityId
-                    ? [
-                        excludeEntityId,
-                    ]
-                    : undefined,
-
+            visibility: "public",
+            ranking: "public",
+            limit: safeLimit,
+            excludeEntityIds: excludeEntityId
+                ? [excludeEntityId]
+                : undefined,
         },
-
     };
 
+    const result = await discover(request);
 
-    /*
-     * Execute the shared Discovery Engine.
-     */
-    const result =
-        await discover(
-            request
-        );
+    const businesses = result.items
+        .filter(item => item.type === "business")
+        .map(item => item.entity as BusinessDocument);
 
-
-    /*
-     * Discovery returns normalized
-     * domain entities.
-     *
-     * We only requested Businesses above,
-     * therefore every item here is a Business.
-     */
-    const businesses =
-        result.items
-            .filter(
-                item =>
-                    item.type === "business"
-            )
-            .map(
-                item =>
-                    item.entity as BusinessDocument
-            );
-
-
-    if (
-        businesses.length === 0
-    ) {
-
+    if (businesses.length === 0) {
         return [];
-
     }
 
+    const businessIds = businesses.map(
+        business => business._id.toString()
+    );
 
-    /*
-     * Resolve the public Publication
-     * for the discovered Businesses.
-     */
-    const businessIds =
-        businesses.map(
-            business =>
-                business._id.toString()
-        );
+    const publications = await Publication.find({
+        entityType: PUBLIC_CONTENT_TYPES.BUSINESS,
+        entityId: {
+            $in: businessIds,
+        },
+        status: PUBLICATION_STATUS.PUBLISHED,
+    })
+        .select("entityId slug")
+        .lean();
 
+    const publicationMap = new Map(
+        publications.map(publication => [
+            publication.entityId,
+            publication.slug,
+        ])
+    );
 
-    const publications =
-        await Publication.find({
-
-            entityType:
-                PUBLIC_CONTENT_TYPES.BUSINESS,
-
-            entityId: {
-                $in:
-                    businessIds,
-            },
-
-            status:
-                PUBLICATION_STATUS.PUBLISHED,
-
-        })
-            .select(
-                "entityId slug"
-            )
-            .lean();
-
-
-    /*
-     * Create a fast lookup map:
-     *
-     * Business ID → public slug
-     */
-    const publicationMap =
-        new Map(
-            publications.map(
-                publication => [
-
-                    publication.entityId,
-
-                    publication.slug,
-
-                ]
-            )
-        );
-
-
-    /*
-     * Convert Businesses into their
-     * public representation.
-     */
     return businesses
-        .map(
-            business => {
+        .map(business => {
+            const slug = publicationMap.get(
+                business._id.toString()
+            );
 
-                const slug =
-                    publicationMap.get(
-                        business._id.toString()
-                    );
-
-
-                /*
-                 * This should never happen because
-                 * shared Discovery only returns
-                 * published entities.
-                 *
-                 * We still protect the public
-                 * boundary.
-                 */
-                if (!slug) {
-
-                    return null;
-
-                }
-
-
-                return toPublicBusinessDTO(
-                    business,
-                    slug
-                );
-
+            if (!slug) {
+                return null;
             }
-        )
+
+            return toPublicBusiness(business, slug);
+        })
         .filter(
-            (
-                business
-            ): business is PublicBusinessDTO =>
+            (business): business is PublicBusiness =>
                 business !== null
         );
-
 };
