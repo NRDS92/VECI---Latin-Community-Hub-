@@ -1,3 +1,4 @@
+
 import {
   discover,
 } from "../../shared/discovery/discovery.service";
@@ -6,6 +7,10 @@ import {
   DiscoveryRequest,
   DiscoveryContentType,
 } from "../../shared/discovery/discovery.types";
+
+import {
+  toPublicBusiness,
+} from "../../shared/public-content/mappers/business.mapper";
 
 import {
   User,
@@ -32,22 +37,6 @@ interface DiscoverParams {
  *
  * This service preserves the existing Mobile API contract
  * while delegating discovery logic to the shared Discovery Engine.
- *
- * The shared Discovery Engine is responsible for:
- *
- * - discoverability
- * - Event queries
- * - Business queries
- * - public visibility rules
- * - ranking
- * - pagination
- *
- * This adapter is responsible only for:
- *
- * - translating the legacy Mobile request
- * - loading Mobile-specific user context
- * - translating the shared response back
- *   into the legacy Mobile response shape
  */
 export const getDiscoverFeed = async ({
   lat,
@@ -62,10 +51,6 @@ export const getDiscoverFeed = async ({
   date,
 }: DiscoverParams) => {
 
-  /*
-   * Translate the legacy "type" parameter
-   * into the shared Discovery content types.
-   */
   const contentTypes:
     DiscoveryContentType[] =
       type === "all"
@@ -84,14 +69,6 @@ export const getDiscoverFeed = async ({
 
   /*
    * Resolve user-specific Discovery context.
-   *
-   * The User model remains a Mobile/domain concern.
-   *
-   * The shared Discovery Engine should NOT query
-   * the User model directly.
-   *
-   * Instead, Mobile resolves the information it
-   * already owns and passes it through DiscoveryContext.
    */
   let favoriteCategories:
     string[] = [];
@@ -133,10 +110,6 @@ export const getDiscoverFeed = async ({
 
   /*
    * Build the shared Discovery request.
-   *
-   * The legacy Mobile endpoint can continue
-   * receiving the same parameters while the
-   * actual Discovery logic lives in shared/discovery.
    */
   const request:
     DiscoveryRequest = {
@@ -151,27 +124,14 @@ export const getDiscoverFeed = async ({
 
         contentTypes,
 
-        /*
-         * The previous Mobile Discovery always
-         * considered upcoming Events.
-         *
-         * We preserve that behavior here.
-         */
         date: date
-        ? date === "today"
-          ? { type: "today" }
-          : { type: "custom", date }
-        : { type: "upcoming" },
+          ? date === "today"
+            ? { type: "today" }
+            : { type: "custom", date }
+          : { type: "upcoming" },
 
       },
 
-
-      /*
-       * User and location information belong
-       * to Discovery context, not filtering.
-       *
-       * Ranking consumes this context.
-       */
       context: {
 
         userId,
@@ -189,11 +149,6 @@ export const getDiscoverFeed = async ({
 
       },
 
-
-      /*
-       * Options control how Discovery should
-       * behave for this consumer.
-       */
       options: {
 
         visibility:
@@ -223,44 +178,51 @@ export const getDiscoverFeed = async ({
 
 
   /*
-   * Preserve the existing Mobile response shape.
+   * Serialize each entity according to its type.
    *
-   * The shared Discovery Engine returns:
+   * Businesses use the canonical PublicBusiness
+   * contract shared with Public Content.
    *
-   * {
-   *   type,
-   *   entity
-   * }
-   *
-   * The legacy Mobile endpoint expects:
-   *
-   * {
-   *   ...entity,
-   *   type
-   * }
-   *
-   * Therefore this adapter converts the
-   * normalized shared representation back
-   * into the Mobile representation.
+   * Events preserve their existing serialization.
    */
   const recommended =
     result.items.map(
-      item => ({
+      item => {
 
-        ...item.entity.toObject(),
+        if (
+          item.type === "business"
+        ) {
 
-        type:
-          item.type,
+          return {
 
-      })
+            ...toPublicBusiness(
+              item.entity,
+              item.entity.slug
+            ),
+
+            type:
+              item.type,
+
+          };
+
+        }
+
+
+        return {
+
+          ...item.entity.toObject(),
+
+          type:
+            item.type,
+
+        };
+
+      }
     );
 
 
   /*
-   * Return the legacy response contract.
-   *
-   * Pagination is now provided by the
-   * shared Discovery Engine.
+   * Preserve the existing Mobile response contract.
    */
   return {
 
@@ -274,4 +236,4 @@ export const getDiscoverFeed = async ({
 
   };
 
-  };
+};

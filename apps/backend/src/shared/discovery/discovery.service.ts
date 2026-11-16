@@ -17,25 +17,24 @@ import type {
 
 import type {
     IBusiness,
+    BusinessDocument,
 } from "../../modules/business/business.model";
 
-
-export type DiscoveryEntity =
-    | EventDocument
-    | IBusiness;
-
-
-export interface DiscoveryResultItem {
-
-    type:
-        | "event"
-        | "business";
-
-    entity:
-        DiscoveryEntity;
-
-}
-
+/**
+ * Discriminated Discovery Result.
+ *
+ * The entity type is determined by its
+ * corresponding content type.
+ */
+export type DiscoveryResultItem =
+    | {
+        type: "event";
+        entity: EventDocument;
+    }
+    | {
+        type: "business";
+        entity: BusinessDocument;
+    };
 
 export interface DiscoveryResult {
 
@@ -328,28 +327,22 @@ const rankEvents = (
 /**
  * Rank discovered Businesses.
  */
-const rankBusinesses = (
-    businesses: IBusiness[]
-): IBusiness[] => {
 
+const rankBusinesses = (
+    businesses: BusinessDocument[]
+): BusinessDocument[] => {
     return businesses
         .map(
             business => ({
-
                 business,
-
                 score:
                     calculateBusinessScore(
                         business
                     ),
-
             })
         )
         .sort(
-            (
-                a,
-                b
-            ) =>
+            (a, b) =>
                 b.score -
                 a.score
         )
@@ -359,6 +352,7 @@ const rankBusinesses = (
         );
 
 };
+
 
 
 /**
