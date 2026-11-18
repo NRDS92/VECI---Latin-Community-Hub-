@@ -1,8 +1,7 @@
 
 {
-  "name": "@veci/contracts",
+  "name": "@ndrs92/contracts",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
   "description": "Shared API contracts for the Veci platform",
   "main": "./dist/cjs/index.js",

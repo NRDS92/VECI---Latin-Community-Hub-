@@ -2,7 +2,7 @@
 import {
     PublicBusinessSchema,
     type PublicBusiness,
-} from "@veci/contracts";
+} from "@ndrs92/contracts";
 
 import type {
     BusinessDocument,

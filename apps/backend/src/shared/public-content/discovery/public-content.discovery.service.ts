@@ -17,7 +17,7 @@ import {
 import type {
     PublicEvent,
     PublicBusiness,
-} from "@veci/contracts";
+} from "@ndrs92/contracts";
 import type {
     EventDocument,
 } from "../../../modules/events/event.model";

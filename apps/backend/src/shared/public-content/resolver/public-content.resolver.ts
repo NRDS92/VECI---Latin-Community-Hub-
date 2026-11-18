@@ -30,7 +30,7 @@ import {
 import type {
     PublicEventWithCreator,
     PublicBusiness,
-} from "@veci/contracts";
+} from "@ndrs92/contracts";
 import mongoose from "mongoose";
 
 export type PublicEntity =
