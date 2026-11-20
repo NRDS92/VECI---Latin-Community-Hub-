@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
+import {
+    CreateBusinessRequestSchema,
+    UpdateBusinessRequestSchema,
+    type CreateBusinessRequest,
+    type UpdateBusinessRequest,
+} from "@ndrs92/contracts";
 
 import { Business } from "./business.model";
-
-import {
-    CreateBusinessInput,
-    UpdateBusinessInput,
-    createBusinessSchema,
-} from "./business.validation";
 
 import { AppError } from "../../shared/errors/AppError";
 
@@ -28,12 +28,12 @@ import {
 // ======================================================
 
 export const createBusiness = async (
-    data: CreateBusinessInput,
+    data: CreateBusinessRequest,
     ownerId: string
 ) => {
 
     const validatedData =
-        createBusinessSchema.parse(data);
+        CreateBusinessRequestSchema.parse(data);
 
     // --------------------------------------------------
     // Check subscription / permissions
@@ -133,8 +133,12 @@ export const getBusinessById = async (
 export const updateBusiness = async (
     id: string,
     ownerId: string,
-    data: UpdateBusinessInput
+    data: UpdateBusinessRequest
 ) => {
+
+    // Validate at the service boundary so every caller receives the same
+    // validation guarantees, before database reads or mutations occur.
+    const validatedData = UpdateBusinessRequestSchema.parse(data);
 
     const business = await getBusinessById(id);
 
@@ -160,7 +164,7 @@ export const updateBusiness = async (
     // --------------------------------------------------
 
     const allowedFields: Array<
-        keyof UpdateBusinessInput
+        keyof UpdateBusinessRequest
     > = [
         "name",
         "description",
@@ -183,10 +187,10 @@ export const updateBusiness = async (
 
     for (const field of allowedFields) {
 
-        if (data[field] !== undefined) {
+        if (validatedData[field] !== undefined) {
 
             (business as any)[field] =
-                data[field];
+                validatedData[field];
         }
     }
 
