@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
-      "@ndrs92/contracts": ["packages/contracts/dist/esm/index.d.ts"]
+      "@ndrs92/contracts": ["./packages/contracts/dist/esm/index.d.ts"]
     },
     "target": "ES2022",
     "module": "NodeNext",
