@@ -1,8 +1,9 @@
+
 name: CI
 
 on:
   push:
-    branches: [main, feat/*]
+    branches: [main, "feat/*"]
   pull_request:
     branches: [main]
 
@@ -11,20 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Clonar repo
+      # 1. Clonar repositorio
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Instalar Node
+      # 2. Configurar Node.js
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      # 3. Instalar dependencias
+      # 3. Instalar dependencias desde package-lock.json
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      # 4. Ejecutar tests
+      # 4. Compilar los contratos compartidos
+      - name: Build shared contracts
+        run: npm run build --workspace=@ndrs92/contracts
+
+      # 5. Ejecutar tests
       - name: Run tests
         run: npm run test
