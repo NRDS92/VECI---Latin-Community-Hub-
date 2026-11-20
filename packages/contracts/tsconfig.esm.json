@@ -12,7 +12,8 @@
     "sourceMap": true,
     "verbatimModuleSyntax": true,
     "noEmitOnError": true,
-    "composite": true
+    "composite": true,
+    "tsBuildInfoFile": "../../node_modules/.cache/contracts/tsconfig.esm.tsbuildinfo"
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/**/*.test.ts", "dist", "node_modules"]
