@@ -1,11 +1,7 @@
 import { FeedItem } from "../types/discover.types";
 
-type FeedItemWithAd = FeedItem & {
-  isAd?: boolean;
-};
-
-export const injectAds = (items: FeedItem[]): FeedItemWithAd[] => {
-  const result: FeedItemWithAd[] = [];
+export const injectAds = (items: FeedItem[]): FeedItem[] => {
+  const result: FeedItem[] = [];
 
   items.forEach((item, index) => {
     result.push(item);
@@ -16,16 +12,8 @@ export const injectAds = (items: FeedItem[]): FeedItemWithAd[] => {
         _id: `ad-${index}`, // ✅ estable (NO random)
         type: "ad", // 🔥 CRÍTICO
         title: "Sponsored",
-        category: "",
-        cityId: "",
-        dateStart: new Date().toISOString(),
-        eventType: "official",
-        location: {
-          type: "Point",
-          coordinates: [0, 0],
-        },
         isAd: true,
-      } as FeedItemWithAd);
+      });
     }
   });
 

@@ -9,7 +9,7 @@ import EventCard from "../../events/components/EventCard";
 import BusinessCard from "../../business/components/BusinnessCard";
 import AdCard from "./AdCard";
 
-import { FeedItem, AdItem } from "../types/discover.types";
+import { FeedItem, getFeedItemKey } from "../types/discover.types";
 
 type Props = {
   items: FeedItem[];
@@ -38,7 +38,7 @@ function DiscoverList({
   const renderItem: ListRenderItem<FeedItem> = useCallback(
     ({ item }) => {
       if (item.type === "ad") {
-        return <AdCard item={item as AdItem} />;
+        return <AdCard item={item} />;
       }
 
       if (item.type === "business") {
@@ -56,17 +56,10 @@ function DiscoverList({
     [handleToggle, isFavorite]
   );
 
-  // ✅ KEY EXTRACTOR ROBUSTO
-  const keyExtractor = useCallback(
-    (item: FeedItem, index: number) =>
-      `${item.type}-${item._id ?? index}`,
-    []
-  );
-
   return (
     <FlatList
       data={items}
-      keyExtractor={keyExtractor}
+      keyExtractor={getFeedItemKey}
       renderItem={renderItem}
 
       // 🔥 FAVORITES RE-RENDER

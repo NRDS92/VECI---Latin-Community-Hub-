@@ -1,35 +1,15 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, Image, Pressable, StyleSheet } from "react-native";
 import { router } from "expo-router";
-
-type Business = {
-  _id: string;
-  name: string;
-  category: string;
-  subCategory?: string;
-  priceRange?: "$" | "$$" | "$$$" | "$$$$";
-  location?: {
-    cityId?: string;
-  };
-  images?: {
-    profile?: string;
-    cover?: string;
-  };
-  rating?: {
-    average: number;
-    count: number;
-  };
-};
+import type { PublicBusiness } from "@ndrs92/contracts";
 
 interface Props {
-  item: Business;
+  item: PublicBusiness;
 }
 
 export default function BusinessCard({ item }: Props) {
-  const image = item.images?.cover || item.images?.profile;
-
-  const handlePress = () => {
-    router.push(`/business/${item._id}` as any);
-  };
+  const image = item.coverImage || item.image;
+  const slug = item.slug;
+  const canOpen = Boolean(slug?.trim());
 
   const isFood =
     item.category === "food" ||
@@ -38,7 +18,16 @@ export default function BusinessCard({ item }: Props) {
     );
 
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress}>
+    <Pressable
+      style={styles.card}
+      disabled={!canOpen}
+      accessibilityRole={canOpen ? "link" : undefined}
+      onPress={() => {
+        if (canOpen) {
+          router.push({ pathname: "/business/public/[slug]", params: { slug } });
+        }
+      }}
+    >
       {/* IMAGE */}
       {image && <Image source={{ uri: image }} style={styles.image} />}
 
@@ -48,7 +37,7 @@ export default function BusinessCard({ item }: Props) {
 
         {/* CATEGORY */}
         <Text style={styles.category}>
-          {item.subCategory || item.category} • {item.location?.cityId}
+          {item.subCategory || item.category} • {item.cityId}
         </Text>
 
         {/* PRICE (solo food) */}
@@ -65,7 +54,7 @@ export default function BusinessCard({ item }: Props) {
           <Text style={styles.meta}>New place 🚀</Text>
         )}
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
