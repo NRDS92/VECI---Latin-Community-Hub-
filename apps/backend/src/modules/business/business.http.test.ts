@@ -166,12 +166,54 @@ describe("Business HTTP integration with isolated persistence mocks", () => {
         expect(document.save).not.toHaveBeenCalled();
     });
 
-    it("reproduces the unresolved unauthenticated owner DTO read", async () => {
+    it("protects follow and owner stats routes from unauthenticated callers", async () => {
+        const follow = await send(`/api/v1/business/${BUSINESS_ID}/follow`, "POST");
+        const stats = await send(`/api/v1/business/${BUSINESS_ID}/stats`, "GET");
+        expect(follow.status).toBe(401);
+        expect(stats.status).toBe(401);
+    });
+
+    it("registers static routes before the single-segment Business ID route", () => {
+        const paths = (businessRoutes as any).stack
+            .filter((layer: any) => layer.route)
+            .map((layer: any) => layer.route.path);
+        expect(paths.indexOf("/followed")).toBeGreaterThanOrEqual(0);
+        expect(paths.indexOf("/followed")).toBeLessThan(paths.indexOf("/:id"));
+        expect(paths.indexOf("/me")).toBeLessThan(paths.indexOf("/:id"));
+    });
+
+    it("rejects invalid behavior payloads at the HTTP boundary", async () => {
+        const result = await send(
+            `/api/v1/business/${BUSINESS_ID}/behavior`,
+            "POST",
+            { event: "menu_download", userId: OTHER_ID },
+            tokenFor()
+        );
+        expect(result.status).toBe(400);
+        expect(result.body).toMatchObject({ success: false, code: "VALIDATION_ERROR" });
+    });
+
+    it("requires authentication before returning an owner Business response", async () => {
         const document = makeDocument();
-        document.contact = { email: "private@example.test", phone: "123" };
         (Business.findById as jest.Mock).mockResolvedValue(document);
         const result = await send(`/api/v1/business/${BUSINESS_ID}`, "GET");
+        expect(result.status).toBe(401);
+    });
+
+    it("returns OwnerBusiness to the authenticated owner", async () => {
+        const document = makeDocument();
+        (Business.findById as jest.Mock).mockResolvedValue(document);
+        const result = await send(`/api/v1/business/${BUSINESS_ID}`, "GET", undefined, tokenFor(OWNER_ID));
         expect(result.status).toBe(200);
-        expect(result.body.data.contact.email).toBe("private@example.test");
+        expect(OwnerBusinessResponseSchema.safeParse(result.body).success).toBe(true);
+    });
+
+    it("rejects an authenticated non-owner from the owner Business response", async () => {
+        const document = makeDocument(OWNER_ID);
+        (Business.findById as jest.Mock).mockResolvedValue(document);
+        (User.findById as jest.Mock).mockResolvedValue({ id: OTHER_ID, accountStatus: "active" });
+        const result = await send(`/api/v1/business/${BUSINESS_ID}`, "GET", undefined, tokenFor(OTHER_ID));
+        expect(result.status).toBe(403);
+        expect(result.body.code).toBe("FORBIDDEN");
     });
 });

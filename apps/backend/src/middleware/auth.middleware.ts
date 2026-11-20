@@ -96,3 +96,27 @@ export const authMiddleware = async (
     return next(error);
   }
 };
+
+/** Optional identity for public analytics only; invalid/expired tokens degrade to anonymous tracking. */
+export const optionalAuthMiddleware = async (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) return next();
+  try {
+    const [scheme, token, ...extraParts] = authHeader.split(" ");
+    if (scheme !== "Bearer" || !token || extraParts.length > 0) return next();
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ["HS256"] });
+    if (typeof decoded !== "object" || decoded === null || typeof decoded.userId !== "string" || !/^[a-f\d]{24}$/i.test(decoded.userId)) {
+      return next();
+    }
+    const user = await User.findById(decoded.userId);
+    if (user && user.accountStatus !== "pending_deletion") (req as any).user = user;
+    return next();
+  } catch (error: unknown) {
+    if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.NotBeforeError) return next();
+    return next(error);
+  }
+};

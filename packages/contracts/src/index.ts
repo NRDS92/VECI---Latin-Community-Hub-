@@ -54,3 +54,22 @@ export type {
     OwnerBusinessResponse,
     OwnerBusinessesResponse,
 } from "./business/business.owner.types.js";
+
+export {
+    BUSINESS_BEHAVIOR_EVENTS,
+    BusinessBehaviorEventSchema,
+    TrackBusinessBehaviorRequestSchema,
+    BusinessFollowStatusSchema,
+    BusinessFollowStatusResponseSchema,
+    OwnerBusinessStatsSchema,
+    OwnerBusinessStatsResponseSchema,
+} from "./business/business.engagement.schema.js";
+
+export type {
+    BusinessBehaviorEvent,
+    TrackBusinessBehaviorRequest,
+    BusinessFollowStatus,
+    BusinessFollowStatusResponse,
+    OwnerBusinessStats,
+    OwnerBusinessStatsResponse,
+} from "./business/business.engagement.types.js";

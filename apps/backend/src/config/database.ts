@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import { BusinessFollow } from "../modules/business/business-follow.model";
+import { BusinessBehavior } from "../modules/business/business-behavior.model";
+import { BusinessBehaviorRateLimit } from "../modules/business/business-behavior-rate-limit.model";
 
 dotenv.config();
 
@@ -11,6 +14,13 @@ export const connectDB = async (): Promise<void> => {
     }
 
     await mongoose.connect(mongoURI);
+
+    // Ensure the compound uniqueness and retention indexes exist before engagement traffic is served.
+    await Promise.all([
+      BusinessFollow.createIndexes(),
+      BusinessBehavior.createIndexes(),
+      BusinessBehaviorRateLimit.createIndexes(),
+    ]);
 
     console.log("MongoDB connected successfully");
   } catch (error) {

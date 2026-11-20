@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 import { User } from "../../users/user.model";
+import { removeUserBusinessEngagement } from "../../business/business-engagement.service";
 
 import { AppError } from "../../../shared/errors/AppError";
 
@@ -83,6 +84,7 @@ export const deleteUser = async (
     const user =
         await getUserById(userId);
 
+    await removeUserBusinessEngagement(userId);
     await user.deleteOne();
 
 };

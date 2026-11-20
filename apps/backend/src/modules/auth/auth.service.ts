@@ -1,6 +1,7 @@
 
 import bcrypt from "bcrypt";
 import { User, AUTH_PROVIDERS } from "../users/user.model";
+import { removeUserBusinessEngagement } from "../business/business-engagement.service";
 import { RegisterInput, LoginInput } from "./auth.types";
 import { authenticateGoogleUser } from "./providers/google.provider";
 import { generateJWT } from "../auth/utils/jwt";
@@ -256,8 +257,7 @@ export const deleteUserAccount = async (
         );
     }
 
-    // Intentionally unchanged: coordinated account deletion
-    // will be implemented in the dedicated deletion phase.
+    await removeUserBusinessEngagement(userId);
     await User.findByIdAndDelete(userId);
 
     return true;
