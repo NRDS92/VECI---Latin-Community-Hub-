@@ -23,8 +23,8 @@
   ],
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs",
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "build:cjs": "tsc -p tsconfig.cjs.json && node -e \"require('fs').writeFileSync('dist/cjs/package.json', JSON.stringify({ type: 'commonjs' }, null, 2) + '\\n')\"",
+    "build:esm": "tsc -b tsconfig.esm.json --force",
+    "build:cjs": "tsc -b tsconfig.cjs.json --force && node -e \"const fs = require('fs'); fs.mkdirSync('dist/cjs', { recursive: true }); fs.writeFileSync('dist/cjs/package.json', JSON.stringify({ type: 'commonjs' }, null, 2) + '\\n')\"",
     "test": "vitest run src"
   },
   "dependencies": {
