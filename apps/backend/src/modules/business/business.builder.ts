@@ -1,8 +1,8 @@
 import { Business } from "./business.model";
-import { CreateBusinessInput } from "./business.validation";
+import type { ParsedCreateBusinessRequest } from "@ndrs92/contracts";
 
 interface BuildBusinessParams {
-    data: CreateBusinessInput;
+    data: ParsedCreateBusinessRequest;
     ownerId: string;
     slug: string;
 }

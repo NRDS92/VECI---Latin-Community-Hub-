@@ -4,6 +4,7 @@ import { AppError } from "../shared/errors/AppError";
 import multer from "multer";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
+import { ZodError } from "zod";
 
 export const errorMiddleware = (
   err: unknown,
@@ -38,6 +39,16 @@ export const errorMiddleware = (
       success: false,
       message: error.message,
       code: error.code,
+    });
+  }
+
+  // Request validation errors are client errors. Keep the established API
+  // envelope and do not return Zod internals or stack traces.
+  if (error instanceof ZodError) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid request data",
+      code: "VALIDATION_ERROR",
     });
   }
 

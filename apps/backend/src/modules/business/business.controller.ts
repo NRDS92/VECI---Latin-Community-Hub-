@@ -5,6 +5,7 @@ import {
 } from "express";
 
 import * as service from "./business.service";
+import { toOwnerBusiness } from "./business.mapper";
 
 
 type Params = {
@@ -36,7 +37,7 @@ export const createBusiness = async (
 
         res.status(201).json({
             success: true,
-            data: business,
+            data: toOwnerBusiness(business),
         });
 
     } catch (err) {
@@ -69,7 +70,7 @@ export const getMyBusinesses = async (
 
         res.json({
             success: true,
-            data: businesses,
+            data: businesses.map(toOwnerBusiness),
         });
 
     } catch (err) {
@@ -99,7 +100,7 @@ export const getBusinessById = async (
 
         res.json({
             success: true,
-            data: business,
+            data: toOwnerBusiness(business),
         });
 
     } catch (err) {
@@ -135,7 +136,7 @@ export const updateBusiness = async (
 
         res.json({
             success: true,
-            data: business,
+            data: toOwnerBusiness(business),
         });
 
     } catch (err) {
