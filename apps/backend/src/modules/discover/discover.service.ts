@@ -11,6 +11,9 @@ import {
 import {
   toPublicBusiness,
 } from "../../shared/public-content/mappers/business.mapper";
+import { PUBLIC_CONTENT_TYPES } from "../../shared/public-content/constants/public-content.types";
+import { PUBLICATION_STATUS } from "../../shared/public-content/publication/publication-status";
+import { Publication } from "../../shared/public-content/publication/publication.model";
 
 import {
   User,
@@ -177,52 +180,36 @@ export const getDiscoverFeed = async ({
     );
 
 
-  /*
-   * Serialize each entity according to its type.
-   *
-   * Businesses use the canonical PublicBusiness
-   * contract shared with Public Content.
-   *
-   * Events preserve their existing serialization.
-   */
-  const recommended =
-    result.items.map(
-      item => {
+  const businessIds = result.items
+    .filter(item => item.type === "business")
+    .map(item => item.entity._id.toString());
+  const publications = businessIds.length > 0
+    ? await Publication.find({
+        entityType: PUBLIC_CONTENT_TYPES.BUSINESS,
+        entityId: { $in: businessIds },
+        status: PUBLICATION_STATUS.PUBLISHED,
+      }).select({ entityId: 1, slug: 1, _id: 0 }).lean()
+    : [];
+  const slugsByBusinessId = new Map(
+    publications.map(({ entityId, slug }) => [entityId, slug])
+  );
 
-        if (
-          item.type === "business"
-        ) {
+  const recommended = [];
+  for (const item of result.items) {
+    if (item.type === "business") {
+      const slug = slugsByBusinessId.get(item.entity._id.toString());
+      // A publication removed since selection can shorten this page.
+      if (!slug) continue;
 
-          return {
-
-            ...toPublicBusiness(
-              item.entity,
-              item.entity.slug
-            ),
-
-            type:
-              item.type,
-
-          };
-
-        }
-
-
-        return {
-
-          ...item.entity.toObject(),
-
-          type:
-            item.type,
-
-        };
-
-      }
-    );
+      recommended.push({ ...toPublicBusiness(item.entity, slug), type: item.type });
+    } else {
+      recommended.push({ ...item.entity.toObject(), type: item.type });
+    }
+  }
 
 
   /*
-   * Preserve the existing Mobile response contract.
+   * Keep pagination from the ranked results, even if serialization omits a business.
    */
   return {
 
