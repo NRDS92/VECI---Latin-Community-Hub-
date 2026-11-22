@@ -9,26 +9,9 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import LocationPicker from "../../../components/LocationPicker";
 import { MaterialIcons } from "@expo/vector-icons";
+import type { BusinessFormValues } from "../business-form.types";
 
 /* ================= TYPES ================= */
-
-export type BusinessFormValues = {
-  name: string;
-  description: string;
-  category: string;
-  subCategory: string;
-  priceRange: "$" | "$$" | "$$$" | undefined;
-  phone: string;
-  instagram: string;
-  image: string;
-  menu: string;
-  address: string;
-  cityId: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
-};
 
 type Props = {
   values: BusinessFormValues;

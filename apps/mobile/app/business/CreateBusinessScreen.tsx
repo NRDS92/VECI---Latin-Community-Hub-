@@ -23,6 +23,11 @@ import BusinessForm from "../../src/features/business/components/BusinessForm";
 import { uploadImage } from "../../src/shared/services/uploadService";
 import { useAuth } from "../../src/shared/context/AuthContext";
 import CitySelectorModal from "../../src/features/discover/components/CitySelectorModal";
+import {
+  buildCreateBusinessRequest,
+  buildUpdateBusinessRequest,
+} from "../../src/features/business/business-form.helpers";
+import type { BusinessFormValues } from "../../src/features/business/business-form.types";
 
 
 const CATEGORY_MAP = {
@@ -35,22 +40,25 @@ const CATEGORY_MAP = {
 };
 
 export default function CreateBusinessScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
-  const isEdit = !!id;
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  const isEdit = Boolean(id);
 
-  const { data } = useBusiness(id);
+  const businessQuery = useBusiness(id);
+  const data = businessQuery.data;
   const createMutation = useCreateBusiness();
   const updateMutation = useUpdateBusiness();
   const [cityModalVisible, setCityModalVisible] = useState(false);
+  const [hydratedBusinessId, setHydratedBusinessId] = useState<string>();
 
   const { token } = useAuth();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<BusinessFormValues>({
     name: "",
     description: "",
     category: "",
     subCategory: "",
-    priceRange:  undefined as "$" | "$$" | "$$$" | undefined,
+    priceRange: undefined,
     phone: "",
     instagram: "",
     image: "",
@@ -71,22 +79,23 @@ export default function CreateBusinessScreen() {
         description: data.description || "",
         category: data.category || "",
         subCategory: data.subCategory || "",
-        priceRange: data.priceRange || null,
+        priceRange: data.priceRange,
         phone: data.contact?.phone || "",
         instagram: data.contact?.instagram || "",
         image: data.images?.profile || "",
-        menu: data.menu || "",
+        menu: data.documents.find((document) => document.type === "menu")?.url || data.menu || "",
         address: data.location?.address || "",
         cityId: data.location?.cityId || "",
         coordinates: {
-          latitude: data.location?.coordinates?.lat || 0,
-          longitude: data.location?.coordinates?.lng || 0,
+          latitude: data.location.coordinates?.lat ?? 0,
+          longitude: data.location.coordinates?.lng ?? 0,
         },
       });
+      setHydratedBusinessId(data._id);
     }
   }, [data, isEdit]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = <K extends keyof BusinessFormValues>(field: K, value: BusinessFormValues[K]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -121,6 +130,17 @@ export default function CreateBusinessScreen() {
         return;
       }
 
+      if (isEdit && (!data || hydratedBusinessId !== data._id)) {
+        Alert.alert("Error", "Business details are not available yet.");
+        return;
+      }
+
+      const currentBusiness = data;
+      if (isEdit && (!currentBusiness?.location.country || !currentBusiness.location.coordinates)) {
+        Alert.alert("Unable to update", "This business is missing required location data. No changes were saved.");
+        return;
+      }
+
       let imageUrl = form.image;
       let menuUrl = form.menu;
 
@@ -133,36 +153,14 @@ export default function CreateBusinessScreen() {
         menuUrl = await uploadImage(form.menu, token);
       }
 
-      const payload = {
-        name: form.name,
-        description: form.description,
-        category: form.category,
-        subCategory: form.subCategory,
-        priceRange: form.priceRange,
-        menu: menuUrl,
-        images: { profile: imageUrl },
-        location: {
-          address: form.address,
-          cityId: form.cityId,
-          country: "Germany",
-          coordinates: {
-            lat: form.coordinates.latitude,
-            lng: form.coordinates.longitude,
-          },
-        },
-        contact: {
-          phone: form.phone,
-          instagram: form.instagram,
-        },
-        tags: [],
-        languages: ["es"],
-        isLatinoOwned: true,
-      };
-
       if (isEdit) {
-        await updateMutation.mutateAsync({ id, data: payload });
+        if (!currentBusiness || !id) return;
+        await updateMutation.mutateAsync({
+          id,
+          data: buildUpdateBusinessRequest({ ...form, image: imageUrl, menu: menuUrl }, currentBusiness),
+        });
       } else {
-        await createMutation.mutateAsync(payload);
+        await createMutation.mutateAsync(buildCreateBusinessRequest({ ...form, image: imageUrl, menu: menuUrl }));
       }
 
       Alert.alert("Success", isEdit ? "Updated" : "Created");
@@ -186,14 +184,24 @@ export default function CreateBusinessScreen() {
         {isEdit ? "Edit Business" : "Create Business"}
       </Text>
 
-      <BusinessForm
+      {isEdit && businessQuery.isLoading ? (
+        <Text style={styles.title}>Loading business…</Text>
+      ) : isEdit && businessQuery.isError ? (
+        <Text style={styles.errorText}>
+          {getBusinessLoadErrorMessage(businessQuery.error)}
+        </Text>
+      ) : isEdit && !data ? (
+        <Text style={styles.errorText}>Business not found.</Text>
+      ) : isEdit && hydratedBusinessId !== data?._id ? (
+        <Text style={styles.title}>Loading business…</Text>
+      ) : <BusinessForm
         values={form}
         onChange={handleChange}
         onPickImage={handlePickImage}
         onPickMenu={handlePickMenu}
         categoryMap={CATEGORY_MAP}
         onOpenCityModal={() => setCityModalVisible(true)}
-      />
+      />}
     </ScrollView>
 
     {/* 🔥 BOTÓN FIJO */}
@@ -201,7 +209,7 @@ export default function CreateBusinessScreen() {
       <TouchableOpacity
         style={styles.button}
         onPress={handleSubmit}
-        disabled={createMutation.isPending || updateMutation.isPending}
+        disabled={createMutation.isPending || updateMutation.isPending || (isEdit && (!data || hydratedBusinessId !== data._id || businessQuery.isLoading || businessQuery.isError))}
       >
         <Text style={styles.buttonText}>
           {isEdit ? "Update Business" : "Create Business"}
@@ -267,4 +275,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
+  errorText: { color: "#f87171", marginVertical: 12 },
 });
+
+function getBusinessLoadErrorMessage(error: unknown): string {
+  const status = (error as { response?: { status?: number } })?.response?.status;
+  if (status === 401) return "Please sign in again to edit this business.";
+  if (status === 403) return "You do not have permission to edit this business.";
+  if (status === 404) return "Business not found.";
+  return "Could not load this business. Please try again.";
+}

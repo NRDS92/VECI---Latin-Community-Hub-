@@ -1,4 +1,15 @@
 import type { AxiosAdapter } from "axios";
+import { OwnerBusinessSchema } from "@ndrs92/contracts";
+
+const ownerBusiness = OwnerBusinessSchema.parse({
+  _id: "business-123", slug: "business-123", name: "Business", providerType: "business", category: "food",
+  profile: { services: [], specialties: [], languages: [], serviceArea: [] },
+  images: { profile: "profile.jpg", gallery: [] }, documents: [], location: { cityId: "cologne" }, contact: {},
+  community: { isLatinoOwned: true }, tags: [], languages: [], isLatinoOwned: true,
+  rating: { average: 0, count: 0 }, likesCount: 0, followersCount: 0, eventsCount: 0,
+  verification: { status: "unverified", checks: { identity: false, contact: false, activity: false } },
+  isFeatured: false, status: "active", createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-01-01T00:00:00.000Z",
+});
 
 jest.mock("@react-native-async-storage/async-storage", () => ({
   getItem: jest.fn().mockResolvedValue("test-session"),
@@ -32,7 +43,7 @@ describe("authenticated Business client", () => {
         expect(config.headers.has("Authorization")).toBe(true);
         return {
           config,
-          data: { success: true, data: [] },
+          data: { success: true, data: config.url?.endsWith("/me") ? [ownerBusiness] : ownerBusiness },
           headers: {},
           status: 200,
           statusText: "OK",

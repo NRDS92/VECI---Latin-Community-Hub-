@@ -12,6 +12,7 @@ describe("Business builder and Mongoose schema integrity (in-memory only)", () =
             providerType: "business",
             category: "food",
             subCategory: "restaurant",
+            priceRange: "$$",
             profile: {
                 headline: "  Latin kitchen  ",
                 services: ["dine-in"],
@@ -41,7 +42,7 @@ describe("Business builder and Mongoose schema integrity (in-memory only)", () =
         expect(document.community.countryOfOrigin).toBe("Colombia");
         expect(document.tags).toEqual(["latin"]);
         expect(document.menu).toBeUndefined();
-        expect(document.priceRange).toBeUndefined();
+        expect(document.priceRange).toBe("$$");
     });
 
     it("serializes a model-shaped document into the existing PublicBusiness contract", async () => {

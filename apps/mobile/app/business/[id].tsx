@@ -5,10 +5,18 @@ import { useBusiness } from "../../src/features/business/hooks/useCreateBusiness
 
 export default function OwnerBusinessScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data, isLoading } = useBusiness(id);
+  const { data, isLoading, error } = useBusiness(id);
 
   if (!data) {
-    return <BusinessDetailStatus isLoading={isLoading} />;
+    const status = (error as { response?: { status?: number } } | null)?.response?.status;
+    const message = status === 401
+      ? "Please sign in again to view this business."
+      : status === 403
+        ? "You do not have permission to view this business."
+        : status === 404
+          ? "Business not found."
+          : undefined;
+    return <BusinessDetailStatus isLoading={isLoading} message={message} />;
   }
 
   return (
