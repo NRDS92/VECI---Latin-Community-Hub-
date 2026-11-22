@@ -52,7 +52,12 @@
     "resend": "^6.10.0",
     "zod": "^4.3.6"
   },
+  "overrides": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
   "workspaces": [
-    "packages/contracts"
+    "packages/contracts",
+    "apps/mobile"
   ]
 }
