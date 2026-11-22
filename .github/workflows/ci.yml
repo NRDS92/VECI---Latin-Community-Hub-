@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Mobile dependencies
+        run: npm ci --prefix apps/mobile
+
       # 4. Compilar los contratos compartidos
       - name: Build shared contracts
         run: npm run build --workspace=@ndrs92/contracts
