@@ -4,6 +4,7 @@ import {
   BusinessCategorySchema,
   BusinessDocumentTypeSchema,
   BusinessPricingTypeSchema,
+  BusinessPriceRangeSchema,
   BusinessProviderTypeSchema,
   BusinessSubCategorySchema,
 } from "./business.schema.js";
@@ -84,6 +85,7 @@ export const CreateBusinessRequestSchema = z.object({
   providerType: BusinessProviderTypeSchema.default("business"),
   category: BusinessCategorySchema,
   subCategory: BusinessSubCategorySchema.optional(),
+  priceRange: BusinessPriceRangeSchema.optional(),
   profile: BusinessProfileRequestSchema.default({
     services: [], specialties: [], languages: [], serviceArea: [],
   }),
@@ -108,6 +110,7 @@ export const UpdateBusinessRequestSchema = z.object({
   providerType: createShape.providerType.unwrap().optional(),
   category: createShape.category.optional(),
   subCategory: createShape.subCategory,
+  priceRange: createShape.priceRange,
   profile: createShape.profile.unwrap().optional(),
   images: createShape.images.optional(),
   documents: createShape.documents.unwrap().optional(),

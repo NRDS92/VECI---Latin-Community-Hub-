@@ -61,6 +61,12 @@ describe("Business request schemas", () => {
     expect(result.documents[0]).toEqual({ type: "menu", url: "menu.pdf", name: "Menu" });
   });
 
+  it("preserves the existing legacy price tier on create and update", () => {
+    expect(CreateBusinessRequestSchema.parse({ ...validCreate, priceRange: "$$" }).priceRange).toBe("$$");
+    expect(UpdateBusinessRequestSchema.parse({ priceRange: "$$$" })).toEqual({ priceRange: "$$$" });
+    expect(CreateBusinessRequestSchema.safeParse({ ...validCreate, priceRange: "$$$$" }).success).toBe(false);
+  });
+
   it("rejects invalid required fields and enum values", () => {
     expect(CreateBusinessRequestSchema.safeParse({ ...validCreate, name: "x" }).success).toBe(false);
     expect(CreateBusinessRequestSchema.safeParse({ ...validCreate, category: "other" }).success).toBe(false);
@@ -122,7 +128,7 @@ describe("Business request schemas", () => {
     expect(create).not.toHaveProperty("owner");
     expect(create).not.toHaveProperty("moderation");
     expect(create).not.toHaveProperty("menu");
-    expect(create).not.toHaveProperty("priceRange");
+    expect(create.priceRange).toBe("$$");
     expect(create.contact).not.toHaveProperty("internalFlag");
 
     const update = UpdateBusinessRequestSchema.parse({ owner: "attacker-id", name: "Updated" });

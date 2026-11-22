@@ -62,6 +62,9 @@ export const BusinessPricingTypeSchema = z.enum([
   "range",
 ]);
 
+/** Legacy display tier retained by existing Business records and Mobile forms. */
+export const BusinessPriceRangeSchema = z.enum(["$", "$$", "$$$"]);
+
 export const BusinessDocumentTypeSchema = z.enum([
   "menu",
   "catalog",
