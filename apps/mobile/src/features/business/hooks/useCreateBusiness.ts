@@ -16,8 +16,9 @@ export const useDeleteBusiness = () => {
     return useMutation({
         mutationFn: deleteBusiness,
 
-        onSuccess: () => {
+        onSuccess: (_, id) => {
             queryClient.invalidateQueries({ queryKey: ["my-businesses"] });
+            queryClient.invalidateQueries({ queryKey: ["business", id] });
         },
     });
 };
@@ -55,6 +56,7 @@ export const useUpdateBusiness = () => {
             queryClient.invalidateQueries({
                 queryKey: ["my-businesses"],
             });
+            queryClient.invalidateQueries({ queryKey: ["public-business"] });
         },
     });
 };

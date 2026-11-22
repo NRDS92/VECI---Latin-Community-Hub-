@@ -171,6 +171,7 @@ export const updateBusiness = async (
         "providerType",
         "category",
         "subCategory",
+        "priceRange",
         "profile",
         "images",
         "documents",

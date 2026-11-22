@@ -1,8 +1,9 @@
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import type { OwnerBusiness } from "@ndrs92/contracts";
 
-export default function MyBusinessCard({ item, onDelete }: any) {
+export default function MyBusinessCard({ item, onDelete }: { item: OwnerBusiness; onDelete: (id: string) => void }) {
   const image = item.images?.profile;
 
   return (
@@ -34,7 +35,7 @@ export default function MyBusinessCard({ item, onDelete }: any) {
             <TouchableOpacity
               onPress={(e) => {
                 e.stopPropagation();
-                router.push(`/business/${item._id}?edit=true`);
+                router.push({ pathname: "/business/CreateBusinessScreen", params: { id: item._id } });
               }}
             >
               <MaterialIcons name="edit" size={20} color="#FF7A00" />

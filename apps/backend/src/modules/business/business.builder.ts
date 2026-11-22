@@ -44,6 +44,9 @@ export const buildBusiness = ({
 
         subCategory: normalizedSubCategory,
 
+        // Legacy price tier remains supported by the persisted model and DTOs.
+        priceRange: data.priceRange,
+
 
         // ==================================================
         // OWNER

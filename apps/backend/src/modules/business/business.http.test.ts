@@ -140,6 +140,16 @@ describe("Business HTTP integration with isolated persistence mocks", () => {
         expect(document.save).toHaveBeenCalledTimes(1);
     });
 
+    it("round-trips the legacy price tier through the owner update response", async () => {
+        const document = makeDocument();
+        (Business.findById as jest.Mock).mockResolvedValue(document);
+        const result = await send(`/api/v1/business/${BUSINESS_ID}`, "PUT", { priceRange: "$$" }, tokenFor());
+        expect(result.status).toBe(200);
+        expect(document.priceRange).toBe("$$");
+        expect(result.body.data.priceRange).toBe("$$");
+        expect(OwnerBusinessResponseSchema.safeParse(result.body).success).toBe(true);
+    });
+
     it("returns HTTP 400 for invalid update data without saving or exposing a stack", async () => {
         const document = makeDocument();
         (Business.findById as jest.Mock).mockResolvedValue(document);
