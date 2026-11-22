@@ -16,6 +16,7 @@ export {
     BusinessSubCategorySchema,
     BusinessAvailabilityTypeSchema,
     BusinessPricingTypeSchema,
+    BusinessPriceRangeSchema,
     BusinessDocumentTypeSchema,
     BusinessVerificationStatusSchema,
     OpeningHoursSchema,
@@ -29,6 +30,7 @@ export {
 
 export type {
     PublicBusiness,
+    BusinessPriceRange,
 } from "./business/business.types.js";
 
 export {
