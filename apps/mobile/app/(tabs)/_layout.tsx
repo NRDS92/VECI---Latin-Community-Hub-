@@ -44,6 +44,11 @@ export default function TabsLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="communities"
+        options={{ tabBarIcon: ({ color }) => <Ionicons name="people-outline" size={24} color={color} /> }}
+      />
+
       {/* ➕ CREATE */}
       <Tabs.Screen
         name="create-event"
