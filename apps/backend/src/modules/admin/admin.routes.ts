@@ -7,6 +7,7 @@ import dashboardRoutes from "./dashboard/dashboard.routes";
 import eventsRoutes from "./events/events.admin.routes";
 import businessRoutes from "./business/business.admin.routes";
 import usersRoutes from "./users/users.admin.routes";
+import communityRoutes from "./community.routes";
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.use("/events", eventsRoutes);
 router.use("/businesses", businessRoutes);
 
 router.use("/users", usersRoutes);
+router.use("/communities", communityRoutes);
 
 router.use("/dashboard", dashboardRoutes);
 

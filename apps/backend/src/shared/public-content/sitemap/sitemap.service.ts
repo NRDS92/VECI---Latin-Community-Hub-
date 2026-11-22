@@ -69,6 +69,9 @@ const getPathSegment = (
         case PUBLIC_CONTENT_TYPES.BUSINESS:
             return "businesses";
 
+        case PUBLIC_CONTENT_TYPES.COMMUNITY:
+            return "communities";
+
         case PUBLIC_CONTENT_TYPES.CITY:
             return "cities";
 
@@ -119,6 +122,9 @@ const getPriority = (
         case PUBLIC_CONTENT_TYPES.BUSINESS:
             return 0.8;
 
+        case PUBLIC_CONTENT_TYPES.COMMUNITY:
+            return 0.7;
+
         case PUBLIC_CONTENT_TYPES.CITY:
             return 0.9;
 
@@ -145,6 +151,9 @@ const getChangeFrequency = (
             return "daily";
 
         case PUBLIC_CONTENT_TYPES.BUSINESS:
+            return "weekly";
+
+        case PUBLIC_CONTENT_TYPES.COMMUNITY:
             return "weekly";
 
         case PUBLIC_CONTENT_TYPES.CITY:
