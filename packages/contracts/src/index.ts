@@ -11,6 +11,74 @@ export type {
 } from "./event/event.types.js";
 
 export {
+  CreateEventRequestSchema,
+  UpdateEventRequestSchema,
+} from "./event/event.request.schema.js";
+
+export type {
+  CreateEventRequest,
+  ParsedCreateEventRequest,
+  UpdateEventRequest,
+  ParsedUpdateEventRequest,
+} from "./event/event.request.schema.js";
+
+export {
+  CommunityMembershipPolicySchema,
+  CommunityModerationStatusSchema,
+  CommunityStatusSchema,
+  CommunityRoleSchema,
+  CommunityMembershipStatusSchema,
+  CreateCommunityRequestSchema,
+  UpdateCommunityRequestSchema,
+  PublicCommunitySchema,
+  OwnerCommunitySchema,
+  MyCommunitySchema,
+  CommunityMembershipSchema,
+  MembershipRequestSchema,
+  MembershipActionSchema,
+  MembershipActionResultSchema,
+  CommunityContentAuthorSchema,
+  ManagedCommunityMemberSchema,
+  CommunityPostSchema,
+  CreateCommunityPostSchema,
+  UpdateCommunityPostSchema,
+  CommunityCommentSchema,
+  CreateCommunityCommentSchema,
+  CommunityNotificationSchema,
+  CommunityContentReportSchema,
+  CreateCommunityContentReportSchema,
+  EventOrganizerSchema,
+  AvailableEventOrganizerSchema,
+  AvailableEventOrganizersResponseSchema,
+} from "./community/community.schema.js";
+
+export type {
+  CreateCommunityRequest,
+  ParsedCreateCommunityRequest,
+  UpdateCommunityRequest,
+  PublicCommunity,
+  OwnerCommunity,
+  MyCommunity,
+  ManagedCommunityMember,
+  CommunityMembership,
+  MembershipRequest,
+  MembershipAction,
+  MembershipActionResult,
+  CommunityContentAuthor,
+  CommunityPost,
+  CreateCommunityPost,
+  ParsedCreateCommunityPost,
+  UpdateCommunityPost,
+  CommunityComment,
+  CreateCommunityComment,
+  CommunityNotification,
+  CommunityContentReport,
+  CreateCommunityContentReport,
+  EventOrganizer,
+  AvailableEventOrganizer,
+} from "./community/community.schema.js";
+
+export {
     BusinessProviderTypeSchema,
     BusinessCategorySchema,
     BusinessSubCategorySchema,
