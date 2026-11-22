@@ -21,8 +21,11 @@ import { useAuth } from "../../src/shared/context/AuthContext";
 import { useCreateEvent } from "../../src/features/events/hooks/useCreateEvent";
 import { router } from "expo-router";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import type { AvailableEventOrganizer } from "@ndrs92/contracts";
+import { getAvailableEventOrganizers } from "../../src/features/events/api/events.api";
 
-import { getMyBusinesses } from "../../src/features/user/service/upload.service";
+type EventType = "official" | "community";
+type EventCategory = "party" | "food" | "culture" | "sports";
 
 export default function CreateEventScreen() {
   const { token, setShowLoginModal } = useAuth();
@@ -32,8 +35,8 @@ export default function CreateEventScreen() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("party");
-  const [eventType, setEventType] = useState("community");
+  const [category, setCategory] = useState<EventCategory>("party");
+  const [eventType, setEventType] = useState<EventType>("community");
 
   const [address, setAddress] = useState("");
   const [dateStart, setDateStart] = useState<Date | null>(null);
@@ -47,9 +50,9 @@ export default function CreateEventScreen() {
   const [goodToKnow, setGoodToKnow] = useState<string[]>([]);
   const [goodToKnowInput, setGoodToKnowInput] = useState("");
 
-  const [businesses, setBusinesses] = useState<any[]>([]);
-  const [selectedBusinessId, setSelectedBusinessId] = useState("");
-  const [loadingBusinesses, setLoadingBusinesses] = useState(false);
+  const [organizers, setOrganizers] = useState<AvailableEventOrganizer[]>([]);
+  const [selectedOrganizerId, setSelectedOrganizerId] = useState("");
+  const [loadingOrganizers, setLoadingOrganizers] = useState(false);
 
   const { mutate, isPending } = useCreateEvent();
 
@@ -60,28 +63,26 @@ export default function CreateEventScreen() {
     }
   }, [token]);
 
-  // 🔥 FETCH BUSINESSES
+  // The server returns only active, approved organizers the current user may manage.
   useEffect(() => {
-    if (eventType === "official" && token) {
-      fetchMyBusinesses();
-    }
-  }, [eventType]);
+    if (!token) return;
+    let current = true;
+    setLoadingOrganizers(true);
+    getAvailableEventOrganizers()
+      .then((data: AvailableEventOrganizer[]) => { if (current) setOrganizers(data); })
+      .catch((error: unknown) => {
+        if (current) {
+          const message = error instanceof Error ? error.message : "Unable to load event organizers";
+          console.log("EVENT ORGANIZER ERROR:", message);
+          Alert.alert("Error", "Failed to load eligible event organizers");
+        }
+      })
+      .finally(() => { if (current) setLoadingOrganizers(false); });
+    return () => { current = false; };
+  }, [token]);
 
-  const fetchMyBusinesses = async () => {
-    try {
-      setLoadingBusinesses(true);
-
-      const data = await getMyBusinesses();
-
-      setBusinesses(data || []);
-    } catch (error: any) {
-      console.log("BUSINESS ERROR:", error?.response?.data || error.message);
-
-      Alert.alert("Error", "Failed to load your businesses");
-    } finally {
-      setLoadingBusinesses(false);
-    }
-  };
+  const organizerType = eventType === "official" ? "business" : "community";
+  const eligibleOrganizers = organizers.filter((organizer) => organizer.type === organizerType);
 
   const pickImage = async (): Promise<string | null> => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -147,8 +148,8 @@ export default function CreateEventScreen() {
       return;
     }
 
-    if (eventType === "official" && !selectedBusinessId) {
-      Alert.alert("Missing business", "Please select a business");
+    if (!selectedOrganizerId || !eligibleOrganizers.some(({ id }) => id === selectedOrganizerId)) {
+      Alert.alert("Missing organizer", `Select an approved ${organizerType} you manage`);
       return;
     }
     if (!image) {
@@ -167,14 +168,13 @@ export default function CreateEventScreen() {
         description,
         category,
         eventType,
-        businessId:
-          eventType === "official" ? selectedBusinessId : undefined,
+        organizer: { type: organizerType, id: selectedOrganizerId },
         images: image ? [image] : [],
         cityId: selectedCity.name,
         address,
         latitude: selectedCity.lat,
         longitude: selectedCity.lng,
-        dateStart,
+        dateStart: dateStart.toISOString(),
         contact: { website, instagram, whatsapp },
         goodToKnow,
       },
@@ -206,7 +206,7 @@ export default function CreateEventScreen() {
     setGoodToKnowInput("");
 
     setImage(null);
-    setSelectedBusinessId("");
+    setSelectedOrganizerId("");
   };
 
   return (
@@ -264,58 +264,45 @@ export default function CreateEventScreen() {
           ))}
         </View>
 
-        {renderPicker("Category", category, setCategory, [
+        {renderPicker("Category", category, (value) => setCategory(value as EventCategory), [
           { label: "Party", value: "party" },
           { label: "Food", value: "food" },
           { label: "Culture", value: "culture" },
           { label: "Sports", value: "sports" },
         ])}
 
-        {renderPicker("Event Type", eventType, setEventType, [
+        {renderPicker("Event Type", eventType, (value) => {
+          setEventType(value as EventType);
+          setSelectedOrganizerId("");
+        }, [
           { label: "Community Event", value: "community" },
           { label: "Official Event", value: "official" },
         ])}
 
-        {/* 🔥 BUSINESS SELECTOR */}
-        {isOfficial && (
-          <View style={styles.inputBox}>
-            <Text style={styles.label}>Business</Text>
+        <View style={styles.inputBox}>
+          <Text style={styles.label}>{isOfficial ? "Business organizer" : "Community organizer"}</Text>
 
-            {loadingBusinesses ? (
-              <ActivityIndicator color="#fff" />
-            ) : businesses.length === 0 ? (
-              <>
-                <Text style={styles.helperText}>
-                  You don’t have any business yet
-                </Text>
-
-                <TouchableOpacity
-                  style={styles.createBusinessButton}
-                  onPress={() =>
-                    router.push("/business/CreateBusinessScreen")
-                  }
-                >
-                  <Text style={styles.createBusinessText}>
-                    Create your business
-                  </Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedBusinessId}
-                  onValueChange={(val) => setSelectedBusinessId(val)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Select business" value="" />
-                  {businesses.map((b) => (
-                    <Picker.Item key={b._id} label={b.name} value={b._id} />
-                  ))}
-                </Picker>
-              </View>
-            )}
-          </View>
-        )}
+          {loadingOrganizers ? (
+            <ActivityIndicator color="#fff" />
+          ) : eligibleOrganizers.length === 0 ? (
+            <Text style={styles.helperText}>
+              {`You need an approved ${organizerType} that you manage to create this event.`}
+            </Text>
+          ) : (
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={selectedOrganizerId}
+                onValueChange={(val) => setSelectedOrganizerId(String(val))}
+                style={styles.picker}
+              >
+                <Picker.Item label={`Select ${organizerType}`} value="" />
+                {eligibleOrganizers.map((organizer) => (
+                  <Picker.Item key={organizer.id} label={organizer.name} value={organizer.id} />
+                ))}
+              </Picker>
+            </View>
+          )}
+        </View>
 
         {renderPicker(
           "City",
@@ -356,7 +343,7 @@ export default function CreateEventScreen() {
 
 /* HELPERS */
 
-const renderInput = (label: string, value: string, onChange: any, multiline = false) => (
+const renderInput = (label: string, value: string, onChange: (value: string) => void, multiline = false) => (
   <View style={styles.inputBox}>
     <Text style={styles.label}>{label}</Text>
     <TextInput
@@ -368,7 +355,7 @@ const renderInput = (label: string, value: string, onChange: any, multiline = fa
   </View>
 );
 
-const renderPicker = (label: string, value: string, onChange: any, options: any[]) => (
+const renderPicker = (label: string, value: string, onChange: (value: string) => void, options: { label: string; value: string }[]) => (
   <View style={styles.inputBox}>
     <Text style={styles.label}>{label}</Text>
     <View style={styles.pickerWrapper}>
