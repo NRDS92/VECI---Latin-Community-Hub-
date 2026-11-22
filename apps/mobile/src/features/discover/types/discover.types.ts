@@ -1,3 +1,5 @@
+import type { PublicBusiness } from "@ndrs92/contracts";
+
 export type Event = {
   _id: string;
   title: string;
@@ -18,14 +20,18 @@ export type AdItem = {
   type: "ad";
   isAd: true;
   title: string;
-  subtitle: string;
-  cta: string;
+  subtitle?: string;
+  cta?: string;
 };
 
 export type FeedItem =
   | (Event & { type: "event"; isAd?: boolean })
-  | (any & { type: "business"; isAd?: boolean })
+  | (PublicBusiness & { type: "business"; isAd?: boolean })
   | AdItem;
+
+export function getFeedItemKey(item: FeedItem): string {
+  return `${item.type}-${item.type === "business" ? item.id : item._id}`;
+}
 
 export type DiscoverResponse = {
   recommended: FeedItem[];

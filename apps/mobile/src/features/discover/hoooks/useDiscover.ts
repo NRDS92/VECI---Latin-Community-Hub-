@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchDiscover } from "../services/discover.service";
-import { DiscoverApiResponse, FeedItem } from "../types/discover.types";
+import { DiscoverApiResponse, FeedItem, getFeedItemKey } from "../types/discover.types";
 import { injectAds } from "../utils/injectAds";
 
 interface UseDiscoverParams {
@@ -65,11 +65,11 @@ export const useDiscover = ({
       query.data?.pages?.flatMap((p) => p?.data?.recommended ?? []) || [];
 
     const uniqueItems: FeedItem[] = Array.from(
-      new Map(rawItems.map((e) => [e._id, e])).values()
+      new Map(rawItems.map((item) => [getFeedItemKey(item), item])).values()
     );
 
     if (type === "events") {
-      return injectAds(uniqueItems as any);
+      return injectAds(uniqueItems);
     }
 
     return uniqueItems;

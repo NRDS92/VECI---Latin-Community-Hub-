@@ -1,4 +1,7 @@
-import { api } from "../../../api/clients"
+import { PublicBusinessSchema } from "@ndrs92/contracts";
+import { api } from "../../../api/clients";
+import { API_V1_URL } from "../../../config/env";
+import type { DiscoverApiResponse, FeedItem } from "../types/discover.types";
 
 interface DiscoverParams {
   page?: number;
@@ -21,7 +24,8 @@ export const fetchDiscover = async ({
   // 🔥 FIX CLAVE
   const isBusinessTab = type === "business" && category !== "food";
 
-  const { data } = await api.get("/discover", {
+  const { data } = await api.get<DiscoverApiResponse>("/discover", {
+    baseURL: API_V1_URL,
     params: {
       page,
       city,
@@ -38,11 +42,24 @@ export const fetchDiscover = async ({
     },
   });
 
-  return data;
+  return {
+    ...data,
+    data: {
+      ...data.data,
+      recommended: data.data.recommended.flatMap<FeedItem>((item) => {
+        if (item.type !== "business") return [item];
+
+        const { type, ...business } = item;
+        if (typeof business.slug !== "string") return [];
+        return [{ ...PublicBusinessSchema.parse(business), type }];
+      }),
+    },
+  };
 };
 
 export const fetchSuggestions = async (q: string, type = "all") => {
   const { data } = await api.get("/discover/suggestions", {
+    baseURL: API_V1_URL,
     params: { q, type },
   });
 
@@ -50,7 +67,7 @@ export const fetchSuggestions = async (q: string, type = "all") => {
 };
 
 export const fetchCategories = async (type: string) => {
-  const res = await api.get(`/discover/categories?type=${type}`);
+  const res = await api.get(`/discover/categories?type=${type}`, { baseURL: API_V1_URL });
 
   return res.data.data;
 };

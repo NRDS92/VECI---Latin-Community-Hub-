@@ -1,9 +1,9 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_URL } from "../config/env";
+import { API_V1_URL } from "../config/env";
 
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: API_V1_URL,
   timeout: 15000,
 });
 // ✅ REQUEST (AQUÍ SE ENVÍA EL TOKEN)
