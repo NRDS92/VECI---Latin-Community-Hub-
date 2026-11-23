@@ -148,7 +148,7 @@ export default function LoginScreen() {
           onPress={handleGoToRegister}
         >
           <Text style={styles.linkText}>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Text style={styles.linkHighlight}>Register</Text>
           </Text>
         </TouchableOpacity>
