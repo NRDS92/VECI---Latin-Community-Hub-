@@ -53,4 +53,4 @@ jobs:
 
       - name: Export Android bundle
         working-directory: apps/mobile
-        run: ./node_modules/.bin/expo export --platform android
+        run: npx --no-install expo export --platform android
