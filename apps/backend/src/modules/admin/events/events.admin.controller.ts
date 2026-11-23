@@ -1,6 +1,13 @@
 import { Request, Response } from "express";
 import { catchAsync } from "../../../utils/catchAsync";
+import { AppError } from "../../../shared/errors/AppError";
 import * as eventsAdminService from "../events/events.admin.service";
+
+const adminId = (req: Request) => {
+    const id = (req as Request & { user?: { id?: string } }).user?.id;
+    if (!id) throw new AppError("Authentication required", 401, "UNAUTHORIZED");
+    return id;
+};
 
 export const getEvents = catchAsync(async (req: Request, res: Response) => {
     const status = req.query.status as string | undefined;
@@ -28,12 +35,10 @@ export const approveEvent = catchAsync(
         req: Request<{ id: string }>,
         res: Response
     ) => {
-        // TODO: Replace with authenticated admin user
-        const adminId = "6a5473977311303a364400c1";
         const result =
             await eventsAdminService.approveEvent(
                 req.params.id,
-                adminId
+                adminId(req)
             );
         res.json({
             success: true,
@@ -48,12 +53,10 @@ export const rejectEvent = catchAsync(
         req: Request<{ id: string }>,
         res: Response
     ) => {
-        const adminId =
-            "6a5473977311303a364400c1";
         const event =
             await eventsAdminService.rejectEvent(
                 req.params.id,
-                adminId,
+                adminId(req),
                 req.body.reason,
                 req.body.comment
             );
