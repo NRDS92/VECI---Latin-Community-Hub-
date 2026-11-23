@@ -22,18 +22,35 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: package-lock.json
 
       # 3. Instalar dependencias desde package-lock.json
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Mobile dependencies
-        run: npm ci --prefix apps/mobile
-
       # 4. Compilar los contratos compartidos
       - name: Build shared contracts
         run: npm run build --workspace=@ndrs92/contracts
 
+      - name: Run Contracts tests
+        run: npm run test --workspace=@ndrs92/contracts
+
+      - name: Build Backend and shared packages
+        run: npm run build
+
       # 5. Ejecutar tests
       - name: Run tests
         run: npm run test
+
+      - name: Run Mobile tests
+        run: npm test --prefix apps/mobile -- --runInBand
+
+      - name: Type-check Mobile
+        run: npx tsc --noEmit -p apps/mobile/tsconfig.json
+
+      - name: Lint Mobile
+        run: npm run lint --prefix apps/mobile
+
+      - name: Export Android bundle
+        working-directory: apps/mobile
+        run: ./node_modules/.bin/expo export --platform android
