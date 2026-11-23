@@ -52,6 +52,10 @@ export interface IEvent extends Document {
     dateEnd?: Date;
     createdBy: mongoose.Types.ObjectId;
     businessId?: mongoose.Types.ObjectId;
+    organizer?: {
+        type: "business" | "community";
+        id: mongoose.Types.ObjectId;
+    };
     stats: {
         views: number;
         attendees: number;
@@ -166,6 +170,17 @@ const EventSchema = new Schema<IEvent>(
             type: Schema.Types.ObjectId,
             ref: "Business",
         },
+        organizer: {
+            type: {
+                type: String,
+                enum: ["business", "community"],
+                required: true,
+            },
+            id: {
+                type: Schema.Types.ObjectId,
+                required: true,
+            },
+        },
         stats: {
             views: { type: Number, default: 0 },
             attendees: { type: Number, default: 0 },
@@ -202,6 +217,7 @@ const EventSchema = new Schema<IEvent>(
 );
 
 EventSchema.index({ location: "2dsphere" });
+EventSchema.index({ "organizer.type": 1, "organizer.id": 1, dateStart: 1, status: 1, "moderation.status": 1 });
 
 export const Event = mongoose.model<IEvent>("Event", EventSchema);
 

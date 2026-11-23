@@ -10,6 +10,7 @@ import {
 import {
     getRelatedEvents,
     getRelatedBusinesses,
+    getPublicCommunityEvents,
 } from "./public-content.discovery.service";
 
 
@@ -76,6 +77,16 @@ export const getPublicEvents =
 
         }
     );
+
+export const getCommunityEvents = catchAsync(async (req: Request, res: Response) => {
+    const communityId = req.params.communityId;
+    if (typeof communityId !== "string") return res.status(400).json({ success: false, message: "Invalid Community ID", code: "INVALID_ID" });
+    const parsedLimit = Number(req.query.limit);
+    const limit = Number.isInteger(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 50) : 20;
+    const events = await getPublicCommunityEvents(communityId, limit);
+    res.setHeader("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+    res.json({ success: true, data: events });
+});
 
 
 export const getPublicBusinesses =

@@ -5,6 +5,7 @@ import {
 import {
     DiscoveryRequest,
 } from "../../discovery/discovery.types";
+import { PublicEventSchema } from "@ndrs92/contracts";
 import {
     Publication,
 } from "../publication/publication.model";
@@ -18,15 +19,18 @@ import type {
     PublicEvent,
     PublicBusiness,
 } from "@ndrs92/contracts";
-import type {
-    EventDocument,
-} from "../../../modules/events/event.model";
+import { Event, type EventDocument } from "../../../modules/events/event.model";
 import type {
     BusinessDocument,
 } from "../../../modules/business/business.model";
 import {
     toPublicBusiness,
 } from "../mappers/business.mapper";
+import { Business } from "../../../modules/business/business.model";
+import { Community } from "../../../modules/community/community.models";
+import mongoose from "mongoose";
+import { MODERATION_STATUS } from "../../constants/moderation";
+import { AppError } from "../../errors/AppError";
 
 export interface RelatedEventsOptions {
     cityId?: string;
@@ -49,11 +53,18 @@ export interface RelatedBusinessesOptions {
  * The Event itself does not own the
  * public slug. The Publication does.
  */
-const toPublicEventDTO = (
+const toPublicEventDTO = async (
     event: EventDocument,
     slug: string
-): PublicEvent => {
-    return {
+): Promise<PublicEvent | null> => {
+    const organizer = event.organizer ?? (event.businessId ? { type: "business" as const, id: event.businessId } : undefined);
+    const entity = organizer
+        ? organizer.type === "community"
+            ? await Community.findOne({ _id: organizer.id, status: "active", "moderation.status": "approved" }).select("slug name images.profile").lean()
+            : await Business.findOne({ _id: organizer.id, status: "active", "moderation.status": "approved" }).select("slug name images.profile").lean()
+        : undefined;
+    if (organizer && !entity) return null;
+    return PublicEventSchema.parse({
         id: event._id.toString(),
         slug,
         title: event.title,
@@ -87,7 +98,14 @@ const toPublicEventDTO = (
                 size: event.attachment.size,
             }
             : undefined,
-    };
+        organizer: organizer && entity ? {
+            type: organizer.type,
+            id: String(organizer.id),
+            slug: entity.slug,
+            name: entity.name,
+            ...(entity.images?.profile ? { image: entity.images.profile } : {}),
+        } : undefined,
+    });
 };
 
 /**
@@ -161,8 +179,7 @@ export const getRelatedEvents = async (
         ])
     );
 
-    return events
-        .map(event => {
+    const mapped = await Promise.all(events.map(async event => {
             const slug = publicationMap.get(
                 event._id.toString()
             );
@@ -171,12 +188,33 @@ export const getRelatedEvents = async (
                 return null;
             }
 
-            return toPublicEventDTO(event, slug);
-        })
-        .filter(
-            (event): event is PublicEvent =>
-                event !== null
-        );
+            return await toPublicEventDTO(event, slug);
+        }));
+    return mapped.filter((event): event is PublicEvent => event !== null);
+};
+
+export const getPublicCommunityEvents = async (communityId: string, limit = 20): Promise<PublicEvent[]> => {
+    if (!mongoose.Types.ObjectId.isValid(communityId)) throw new AppError("Invalid Community ID", 400, "INVALID_ID");
+    const id = new mongoose.Types.ObjectId(communityId);
+    const publishedCommunity = await Publication.exists({ entityType: PUBLIC_CONTENT_TYPES.COMMUNITY, entityId: communityId, status: PUBLICATION_STATUS.PUBLISHED });
+    if (!publishedCommunity) return [];
+    const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
+    const events = await Event.find({
+        "organizer.type": "community", "organizer.id": id,
+        status: "active", "moderation.status": MODERATION_STATUS.APPROVED,
+    }).sort({ dateStart: 1 }).limit(safeLimit);
+    if (!events.length) return [];
+    const publications = await Publication.find({
+        entityType: PUBLIC_CONTENT_TYPES.EVENT,
+        entityId: { $in: events.map((event) => String(event._id)) },
+        status: PUBLICATION_STATUS.PUBLISHED,
+    }).select("entityId slug").lean();
+    const slugs = new Map(publications.map((publication) => [publication.entityId, publication.slug]));
+    const results = await Promise.all(events.map(async (event) => {
+        const slug = slugs.get(String(event._id));
+        return slug ? toPublicEventDTO(event as unknown as EventDocument, slug) : null;
+    }));
+    return results.filter((event): event is PublicEvent => event !== null);
 };
 
 /**

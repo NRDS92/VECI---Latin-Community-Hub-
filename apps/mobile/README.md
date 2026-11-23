@@ -4,17 +4,21 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
 
 ## Get started
 
-1. Install dependencies
+1. From the monorepo root, install all workspaces:
 
    ```bash
-   npm install
+   npm ci
    ```
+
+   `apps/mobile` and `packages/contracts` are npm workspaces. The root lockfile is canonical; do not install Mobile with `npm ci --prefix apps/mobile`.
 
 2. Start the app
 
    ```bash
-   npx expo start
+   npm run start --workspace=mobile
    ```
+
+   The Mobile postinstall builds the local Contracts workspace. Expo EAS commands should still be run from `apps/mobile`, as required for app configuration; EAS detects the npm monorepo and installs from its root lockfile.
 
 In the output, you'll find options to open the app in a
 

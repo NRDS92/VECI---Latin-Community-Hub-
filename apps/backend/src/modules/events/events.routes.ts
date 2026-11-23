@@ -17,6 +17,12 @@ router.get(
 );
 
 router.get(
+    "/organizers",
+    authMiddleware,
+    eventsController.getEventOrganizers
+);
+
+router.get(
     "/",
     eventsController.getEvents
 );

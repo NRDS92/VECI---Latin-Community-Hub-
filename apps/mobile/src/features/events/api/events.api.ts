@@ -1,8 +1,14 @@
 import { api } from "../../../api/clients";
+import { CreateEventRequestSchema, type CreateEventRequest, type UpdateEventRequest } from "@ndrs92/contracts";
 
-export const createEvent = async (data: any) => {
+export const createEvent = async (input: CreateEventRequest) => {
+  const data = CreateEventRequestSchema.parse(input);
   const res = await api.post("/events", data);
-  console.log(res.data.data)
+  return res.data.data;
+};
+
+export const getAvailableEventOrganizers = async () => {
+  const res = await api.get("/events/organizers");
   return res.data.data;
 };
 
@@ -17,7 +23,7 @@ export const getMyEvents = async () => {
     }
 };
 
-export const updateEvent = async (id: string, data: any) => {
+export const updateEvent = async (id: string, data: UpdateEventRequest) => {
     const res = await api.patch(`/events/${id}`, data);
     return res.data.data;
 };

@@ -5,6 +5,7 @@ import {
 import {
     getPublicEvents,
     getPublicBusinesses,
+    getCommunityEvents,
 } from "./public-content.discovery.controller";
 
 
@@ -21,6 +22,11 @@ router.get(
 router.get(
     "/businesses",
     getPublicBusinesses
+);
+
+router.get(
+    "/communities/:communityId/events",
+    getCommunityEvents
 );
 
 

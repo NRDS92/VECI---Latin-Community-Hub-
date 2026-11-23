@@ -117,7 +117,7 @@ export default function EventDetailScreen() {
       if (!token) return;
 
       setIsUploading(true);
-      const imageUrl = await uploadEventImage(uri, token);
+      const imageUrl = await uploadEventImage(uri);
       updateField("images", [imageUrl]);
     } catch (error) {
       console.log("❌ upload error:", error);

@@ -15,6 +15,7 @@ import {
 import {
     publishContent,
 } from "../../../shared/public-content/publisher/publisher.service";
+import { notifyCommunityEventPublished } from "../../community/community.forum.service";
 
 // TODO:
 // Verify that the authenticated user has ADMIN role
@@ -174,6 +175,14 @@ export const approveEvent = async (
                     event.description,
 
             });
+
+        if (event.organizer?.type === "community") {
+            try {
+                await notifyCommunityEventPublished(String(event.organizer.id), String(event._id));
+            } catch {
+                console.error("Community Event notification dispatch failed");
+            }
+        }
 
 
         console.log(

@@ -30,6 +30,12 @@ export const createEvent = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+export const getEventOrganizers = catchAsync(async (req: Request, res: Response) => {
+    const userId = (req as any).user.id;
+    const data = await eventsService.getAvailableEventOrganizers(userId);
+    res.json({ success: true, data });
+});
+
 //  NEARBY EVENTS
 export const getNearbyEvents = catchAsync(async (req: Request, res: Response) => {
     const lat = Number(req.query.lat);
@@ -57,12 +63,12 @@ export const getEvents = catchAsync(async (_req: Request, res: Response) => {
 //  GET BY ID
 export const getEventById = catchAsync(async (req: Request<{ id: string }>, res: Response) => {
     const { id } = req.params;
-    const event = await eventsService.getEventById(id);
+    const userId = (req as any).user?.id;
+    const event = await eventsService.getEventById(id, userId);
     if (!event) {
         throw new AppError("Event not found", 404, "NOT_FOUND");
     }
     let userContext = null;
-    const userId = (req as any).user?.id;
     if (userId) {
         const [isAttending, user] = await Promise.all([
             EventAnalytics.isUserAttending(
@@ -116,6 +122,8 @@ export const updateEvent = catchAsync(async (req: Request<{ id: string }>, res: 
         "goodToKnow",
         "price",
         "links",
+        "latitude",
+        "longitude",
     ];
     const filteredBody: any = {};
     for (const key of allowedFields) {
@@ -223,7 +231,7 @@ export const uploadEventAttachment = catchAsync(
             );
         }
 
-        if (event.createdBy.toString() !== userId) {
+        if (!(await eventsService.canManageEvent(event as any, userId))) {
             throw new AppError(
                 "Only the event organizer can upload the attachment",
                 403,

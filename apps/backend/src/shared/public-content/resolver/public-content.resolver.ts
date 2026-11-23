@@ -15,6 +15,7 @@ import {
 import {
     Business,
 } from "../../../modules/business/business.model";
+import { Community } from "../../../modules/community/community.models";
 import {
     AppError,
 } from "../../errors/AppError";
@@ -30,12 +31,15 @@ import {
 import type {
     PublicEventWithCreator,
     PublicBusiness,
+    PublicCommunity,
 } from "@ndrs92/contracts";
 import mongoose from "mongoose";
+import { toPublicCommunity } from "../../../modules/community/community.mapper";
 
 export type PublicEntity =
     | PublicEventWithCreator
-    | PublicBusiness;
+    | PublicBusiness
+    | PublicCommunity;
 
 export interface ResolvedPublicContent {
     publication: PublicationDocument;
@@ -97,6 +101,8 @@ interface PublicEventSource {
         name: string;
         size: number;
     };
+    businessId?: mongoose.Types.ObjectId;
+    organizer?: { type: "business" | "community"; id: mongoose.Types.ObjectId };
 }
 
 /**
@@ -110,16 +116,32 @@ interface PublicEventSource {
  * createdBy is exposed only as a
  * limited public profile representation.
  */
-const toPublicEventDTO = (
+const toPublicEventDTO = async (
     event: PublicEventSource,
     slug: string
-): PublicEventWithCreator => {
+): Promise<PublicEventWithCreator> => {
     const createdBy = {
         id: event.createdBy._id.toString(),
         name: event.createdBy.name,
         profileImage:
             event.createdBy.profileImage ?? undefined,
     };
+
+    const organizerSource = event.organizer ?? (event.businessId ? { type: "business" as const, id: event.businessId } : undefined);
+    let publicOrganizer: PublicEventWithCreator["organizer"];
+    if (organizerSource) {
+        const entity = organizerSource.type === "community"
+            ? await Community.findOne({ _id: organizerSource.id, status: "active", "moderation.status": MODERATION_STATUS.APPROVED }).select("slug name images.profile").lean()
+            : await Business.findOne({ _id: organizerSource.id, status: "active", "moderation.status": MODERATION_STATUS.APPROVED }).select("slug name images.profile").lean();
+        if (!entity) throw new AppError("Published Event organizer is unavailable", 404, "PUBLIC_CONTENT_ENTITY_NOT_FOUND");
+        publicOrganizer = {
+            type: organizerSource.type,
+            id: String(organizerSource.id),
+            slug: entity.slug,
+            name: entity.name,
+            ...(entity.images?.profile ? { image: entity.images.profile } : {}),
+        };
+    }
 
     return {
         id: event._id.toString(),
@@ -156,6 +178,7 @@ const toPublicEventDTO = (
                 size: event.attachment.size,
             }
             : undefined,
+        organizer: publicOrganizer,
     };
 };
 
@@ -236,7 +259,7 @@ export const resolveBySlug = async (
                 );
             }
 
-            entity = toPublicEventDTO(
+            entity = await toPublicEventDTO(
                 event as PublicEventSource,
                 publication.slug
             );
@@ -264,6 +287,20 @@ export const resolveBySlug = async (
                 publication.slug
             );
 
+            break;
+        }
+
+        case PUBLIC_CONTENT_TYPES.COMMUNITY: {
+            const community = await Community.findOne({
+                _id: publication.entityId,
+                status: "active",
+                "moderation.status": MODERATION_STATUS.APPROVED,
+            });
+            if (!community) {
+                throw new AppError("Published content entity not found.", 404, "PUBLIC_CONTENT_ENTITY_NOT_FOUND");
+            }
+            entity = toPublicCommunity(community);
+            entity.slug = publication.slug;
             break;
         }
 

@@ -1,5 +1,6 @@
 
 import { z } from "zod";
+import { EventOrganizerSchema } from "../community/community.schema.js";
 
 export const PublicEventSchema = z.object({
   id: z.string(),
@@ -22,6 +23,11 @@ export const PublicEventSchema = z.object({
   address: z.string(),
   dateStart: z.iso.datetime(),
   dateEnd: z.iso.datetime().optional(),
+  organizer: EventOrganizerSchema.extend({
+    slug: z.string(),
+    name: z.string(),
+    image: z.string().optional(),
+  }).strict().optional(),
   images: z.array(z.string()),
   location: z.object({
     type: z.literal("Point"),
