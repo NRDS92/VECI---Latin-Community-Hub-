@@ -35,7 +35,8 @@ export const toOwnerCommunity = (community: CommunitySource) => ({
   ...commonFields(community),
   ownerId: String(community.owner),
   membershipPolicy: community.membershipPolicy,
-  moderationStatus: community.moderation.status,
+  // Persistence uses the shared uppercase moderation constants; transport contracts use lowercase values.
+  moderationStatus: community.moderation.status.toLowerCase() as "pending" | "approved" | "rejected",
   ...(community.moderation.rejectionComment ? { moderationReason: community.moderation.rejectionComment } : {}),
   status: community.status,
   updatedAt: community.updatedAt.toISOString(),
