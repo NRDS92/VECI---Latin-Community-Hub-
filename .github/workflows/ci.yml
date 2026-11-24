@@ -3,9 +3,12 @@ name: CI
 
 on:
   push:
-    branches: [main, "feat/*"]
+    branches: [main, "feat/**", "feature/**", "fix/**", "codex/**"]
   pull_request:
     branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -20,7 +23,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: package-lock.json
 
