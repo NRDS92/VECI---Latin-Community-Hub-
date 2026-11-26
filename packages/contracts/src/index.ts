@@ -143,3 +143,19 @@ export type {
     OwnerBusinessStats,
     OwnerBusinessStatsResponse,
 } from "./business/business.engagement.types.js";
+export {
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_UTF8_BYTES,
+  PASSWORD_REQUIREMENTS,
+  getPasswordRequirementStatus,
+  PasswordSchema,
+  RegisterPasswordSchema,
+  ChangePasswordRequestSchema,
+  ResetPasswordRequestSchema,
+} from "./auth/password.schema.js";
+export type {
+  PasswordRequirementStatus,
+  RegisterPassword,
+  ChangePasswordRequest,
+  ResetPasswordRequest,
+} from "./auth/password.schema.js";

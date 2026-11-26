@@ -60,6 +60,14 @@ export const authMiddleware = async (
       );
     }
 
+    const tokenVersion =
+      typeof decoded.tokenVersion === "number" ? decoded.tokenVersion : 0;
+    if (tokenVersion !== (user.tokenVersion ?? 0)) {
+      return next(
+        new AppError("Session is no longer valid", 401, "SESSION_REVOKED")
+      );
+    }
+
     if (user.accountStatus === "pending_deletion") {
       return next(
         new AppError(
@@ -113,7 +121,19 @@ export const optionalAuthMiddleware = async (
       return next();
     }
     const user = await User.findById(decoded.userId);
-    if (user && user.accountStatus !== "pending_deletion") (req as any).user = user;
+    const tokenVersion =
+      typeof decoded === "object" &&
+      decoded !== null &&
+      typeof decoded.tokenVersion === "number"
+        ? decoded.tokenVersion
+        : 0;
+    if (
+      user &&
+      user.accountStatus !== "pending_deletion" &&
+      tokenVersion === (user.tokenVersion ?? 0)
+    ) {
+      (req as any).user = user;
+    }
     return next();
   } catch (error: unknown) {
     if (error instanceof jwt.JsonWebTokenError || error instanceof jwt.NotBeforeError) return next();

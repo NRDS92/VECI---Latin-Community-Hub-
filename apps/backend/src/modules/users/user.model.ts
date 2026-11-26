@@ -26,6 +26,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   passwordHash?: string;
+  tokenVersion: number;
   provider: AuthProvider;
   providerId?: string;
   role: "user" | "admin";
@@ -85,6 +86,7 @@ const UserSchema = new Schema<IUser>(
         return this.provider === AUTH_PROVIDERS.EMAIL;
       },
     },
+    tokenVersion: { type: Number, default: 0, min: 0 },
 
     role: {
       type: String,

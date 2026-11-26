@@ -15,6 +15,7 @@ import {
     sendVerificationEmail,
     sendPasswordResetEmail,
 } from "./utils/email";
+import { PasswordSchema } from "@ndrs92/contracts";
 
 /**
  * Prevent accounts pending deletion from performing
@@ -54,6 +55,7 @@ export const registerUser = async (
     data: RegisterInput
 ) => {
     const { name, email, password, cityId } = data;
+    PasswordSchema.parse(password);
     if (!email || !password) {
         throw new AppError(
             "Missing credentials",
@@ -307,6 +309,7 @@ export const resetPassword = async (
     token: string,
     password: string
 ) => {
+    PasswordSchema.parse(password);
     const user = await User.findOne({
         passwordResetToken: token,
         passwordResetExpires: {
@@ -325,6 +328,7 @@ export const resetPassword = async (
     assertAccountActive(user.accountStatus);
 
     user.passwordHash = await bcrypt.hash(password, 12);
+    user.tokenVersion = (user.tokenVersion ?? 0) + 1;
 
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
@@ -332,4 +336,42 @@ export const resetPassword = async (
     await user.save();
 
     return true;
+};
+
+export const changePassword = async (
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+) => {
+    PasswordSchema.parse(newPassword);
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new AppError("User not found.", 404, "USER_NOT_FOUND");
+    }
+    assertAccountActive(user.accountStatus);
+    if (user.provider !== AUTH_PROVIDERS.EMAIL || !user.passwordHash) {
+        throw new AppError(
+            "Password changes are unavailable for Google accounts.",
+            403,
+            "GOOGLE_ACCOUNT_NO_PASSWORD"
+        );
+    }
+    if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
+        throw new AppError(
+            "Current password is incorrect.",
+            401,
+            "INVALID_CURRENT_PASSWORD"
+        );
+    }
+    if (await bcrypt.compare(newPassword, user.passwordHash)) {
+        throw new AppError(
+            "New password must be different from your current password.",
+            400,
+            "PASSWORD_REUSE"
+        );
+    }
+    user.passwordHash = await bcrypt.hash(newPassword, 12);
+    user.tokenVersion = (user.tokenVersion ?? 0) + 1;
+    await user.save();
+    return { token: generateJWT(user) };
 };
