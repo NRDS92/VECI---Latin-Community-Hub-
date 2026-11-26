@@ -189,9 +189,20 @@ export const updateBusiness = async (
     for (const field of allowedFields) {
 
         if (validatedData[field] !== undefined) {
-
-            (business as any)[field] =
-                validatedData[field];
+            if (field === "location" && validatedData.location) {
+                const location = validatedData.location;
+                business.location = {
+                    address: location.address,
+                    cityId: location.cityId,
+                    country: location.country,
+                    coordinates: {
+                        lat: location.latitude,
+                        lng: location.longitude,
+                    },
+                };
+            } else {
+                (business as any)[field] = validatedData[field];
+            }
         }
     }
 

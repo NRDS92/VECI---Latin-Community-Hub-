@@ -138,6 +138,38 @@ describe("business service contract boundary", () => {
         expect(business.save).toHaveBeenCalledTimes(1);
     });
 
+    it("maps the flat update location contract into persisted coordinate paths", async () => {
+        const business = {
+            owner: { toString: () => "owner-1" },
+            location: {
+                address: "Old address",
+                cityId: "Köln",
+                country: "Germany",
+                coordinates: { lat: 50.9, lng: 6.9 },
+            },
+            save: jest.fn().mockResolvedValue(undefined),
+        };
+        (Business.findById as jest.Mock).mockResolvedValue(business);
+
+        await updateBusiness("507f1f77bcf86cd799439011", "owner-1", {
+            location: {
+                address: "Gotenring 16, 50679 Köln, Germany",
+                cityId: "Köln",
+                country: "Germany",
+                latitude: 50.9348,
+                longitude: 6.9762,
+            },
+        });
+
+        expect(business.location).toEqual({
+            address: "Gotenring 16, 50679 Köln, Germany",
+            cityId: "Köln",
+            country: "Germany",
+            coordinates: { lat: 50.9348, lng: 6.9762 },
+        });
+        expect(business.save).toHaveBeenCalledTimes(1);
+    });
+
     it("does not clear a legacy price tier when Update omits priceRange", async () => {
         const business = {
             owner: { toString: () => "owner-1" },

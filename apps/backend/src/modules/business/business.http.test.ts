@@ -140,6 +140,30 @@ describe("Business HTTP integration with isolated persistence mocks", () => {
         expect(document.save).toHaveBeenCalledTimes(1);
     });
 
+    it("round-trips a changed street address and coordinates through the owner response", async () => {
+        const document = makeDocument();
+        (Business.findById as jest.Mock).mockResolvedValue(document);
+
+        const result = await send(`/api/v1/business/${BUSINESS_ID}`, "PUT", {
+            location: {
+                address: "Gotenring 16, 50679 Köln, Germany",
+                cityId: "Köln",
+                country: "Germany",
+                latitude: 50.9348,
+                longitude: 6.9762,
+            },
+        }, tokenFor());
+
+        expect(result.status).toBe(200);
+        expect(result.body.data.location).toEqual({
+            address: "Gotenring 16, 50679 Köln, Germany",
+            cityId: "Köln",
+            country: "Germany",
+            coordinates: { lat: 50.9348, lng: 6.9762 },
+        });
+        expect(OwnerBusinessResponseSchema.safeParse(result.body).success).toBe(true);
+    });
+
     it("round-trips the legacy price tier through the owner update response", async () => {
         const document = makeDocument();
         (Business.findById as jest.Mock).mockResolvedValue(document);
