@@ -46,12 +46,12 @@ export const PasswordSchema = z.string().superRefine((password, context) => {
 export const ChangePasswordRequestSchema = z.object({
   currentPassword: z.string().min(1),
   newPassword: PasswordSchema,
-}).strict();
+});
 
 export const ResetPasswordRequestSchema = z.object({
   token: z.string().min(1),
   password: PasswordSchema,
-}).strict();
+});
 
 export const RegisterPasswordSchema = PasswordSchema;
 
