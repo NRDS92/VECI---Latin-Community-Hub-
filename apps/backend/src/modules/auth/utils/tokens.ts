@@ -9,3 +9,6 @@ const generateToken = () => {
 export const generateVerificationToken = () => generateToken();
 
 export const generatePasswordResetToken = () => generateToken();
+
+export const hashPasswordResetToken = (token: string) =>
+    crypto.createHash("sha256").update(token, "utf8").digest("hex");

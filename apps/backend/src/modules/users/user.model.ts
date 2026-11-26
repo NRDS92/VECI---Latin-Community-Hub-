@@ -162,6 +162,7 @@ const UserSchema = new Schema<IUser>(
     passwordResetToken: {
       type: String,
       default: null,
+      index: true,
     },
 
     passwordResetExpires: {

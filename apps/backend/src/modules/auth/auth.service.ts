@@ -10,6 +10,7 @@ import { sanitizeUser } from "../../shared/utils/sanitize-user";
 import {
     generateVerificationToken,
     generatePasswordResetToken,
+    hashPasswordResetToken,
 } from "./utils/tokens";
 import {
     sendVerificationEmail,
@@ -266,7 +267,8 @@ export const deleteUserAccount = async (
 };
 
 export const forgotPassword = async (
-    email: string
+    email: string,
+    locale?: string
 ) => {
     const emailNormalized = email.toLowerCase().trim();
 
@@ -290,17 +292,20 @@ export const forgotPassword = async (
 
     const token = generatePasswordResetToken();
 
-    user.passwordResetToken = token;
+    user.passwordResetToken = hashPasswordResetToken(token);
     user.passwordResetExpires = new Date(
         Date.now() + 15 * 60 * 1000
     );
 
     await user.save();
 
-    await sendPasswordResetEmail(
-        user.email,
-        token
-    );
+    try {
+        await sendPasswordResetEmail(user.email, token, locale);
+    } catch {
+        // Keep forgot-password responses indistinguishable for existing and
+        // unknown accounts. Never include the reset token in logs.
+        console.warn("Password reset email delivery failed");
+    }
 
     return true;
 };
@@ -310,12 +315,20 @@ export const resetPassword = async (
     password: string
 ) => {
     PasswordSchema.parse(password);
-    const user = await User.findOne({
-        passwordResetToken: token,
+    const now = new Date();
+    const tokenFilter = {
         passwordResetExpires: {
-            $gt: new Date(),
+            $gt: now,
         },
-    });
+        // Raw tokens are accepted temporarily for reset links issued before the
+        // hash-only storage change. Their original 15-minute expiry still applies.
+        $or: [
+            { passwordResetToken: hashPasswordResetToken(token) },
+            { passwordResetToken: token },
+        ],
+    };
+
+    const user = await User.findOne(tokenFilter);
 
     if (!user) {
         throw new AppError(
@@ -327,13 +340,34 @@ export const resetPassword = async (
 
     assertAccountActive(user.accountStatus);
 
-    user.passwordHash = await bcrypt.hash(password, 12);
-    user.tokenVersion = (user.tokenVersion ?? 0) + 1;
+    if (user.provider !== AUTH_PROVIDERS.EMAIL) {
+        throw new AppError(
+            "Invalid or expired reset token.",
+            400,
+            "INVALID_RESET_TOKEN"
+        );
+    }
 
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    const passwordHash = await bcrypt.hash(password, 12);
+    // Consume the token and update the password in one conditional operation.
+    // If concurrent requests race, MongoDB allows only the first to match.
+    const updated = await User.findOneAndUpdate(
+        { _id: user._id, provider: AUTH_PROVIDERS.EMAIL, accountStatus: { $ne: "pending_deletion" }, ...tokenFilter },
+        {
+            $set: { passwordHash },
+            $inc: { tokenVersion: 1 },
+            $unset: { passwordResetToken: 1, passwordResetExpires: 1 },
+        },
+        { returnDocument: "after", runValidators: true }
+    );
 
-    await user.save();
+    if (!updated) {
+        throw new AppError(
+            "Invalid or expired reset token.",
+            400,
+            "INVALID_RESET_TOKEN"
+        );
+    }
 
     return true;
 };
