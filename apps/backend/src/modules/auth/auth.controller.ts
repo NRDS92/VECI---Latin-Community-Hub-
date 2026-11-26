@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import * as authService from "./auth.service";
 import { catchAsync } from "../../utils/catchAsync";
+import { ChangePasswordRequestSchema, ResetPasswordRequestSchema } from "@ndrs92/contracts";
 
 
 
@@ -90,7 +91,7 @@ export const forgotPassword = catchAsync(
 
 export const resetPassword = catchAsync(
   async (req: Request, res: Response) => {
-    const { token, password } = req.body;
+    const { token, password } = ResetPasswordRequestSchema.parse(req.body);
 
     await authService.resetPassword(token, password);
 
@@ -100,3 +101,13 @@ export const resetPassword = catchAsync(
     });
   }
 );
+
+export const changePassword = catchAsync(async (req: any, res: Response) => {
+  const payload = ChangePasswordRequestSchema.parse(req.body);
+  const data = await authService.changePassword(
+    req.user.id,
+    payload.currentPassword,
+    payload.newPassword
+  );
+  res.json({ success: true, data });
+});

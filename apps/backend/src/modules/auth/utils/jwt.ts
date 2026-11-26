@@ -11,6 +11,7 @@ export const generateJWT = (user: IUser): string => {
     return jwt.sign(
         {
             userId: user._id.toString(),
+            tokenVersion: user.tokenVersion ?? 0,
         },
         JWT_SECRET,
         {
