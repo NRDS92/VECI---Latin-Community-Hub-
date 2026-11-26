@@ -1,54 +1,35 @@
-# Welcome to your Expo app 👋
+# Veci Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+The Mobile client is a React Native application built with Expo SDK 54 and Expo Router. It shares the root npm workspace with packages/contracts; install dependencies from the monorepo root, not from apps/mobile.
 
-## Get started
+## Implemented screens and modules
 
-1. From the monorepo root, install all workspaces:
+File-based routes in app include discovery tabs, profile/favorites, Event detail/create/owned Event screens, Business detail/create/My Businesses/public slug detail, and Community discovery/detail/create/manage/edit/notifications screens. Feature modules under src/features contain API clients, form helpers, auth, discovery, Event and Community behavior.
 
-   ```bash
-   npm ci
-   ```
+This inventory describes source files; it does not certify backend deployment or full external E2E flows.
 
-   `apps/mobile` and `packages/contracts` are npm workspaces. The root lockfile is canonical; do not install Mobile with `npm ci --prefix apps/mobile`.
+## Requirements and commands
 
-2. Start the app
+Use Node.js 26.x and npm. From the monorepo root:
 
-   ```bash
-   npm run start --workspace=mobile
-   ```
+~~~sh
+npm ci
+npm run start --workspace=mobile
+npm test --prefix apps/mobile -- --runInBand
+npx tsc --noEmit -p apps/mobile/tsconfig.json
+npm run lint --prefix apps/mobile
+~~~
 
-   The Mobile postinstall builds the local Contracts workspace. Expo EAS commands should still be run from `apps/mobile`, as required for app configuration; EAS detects the npm monorepo and installs from its root lockfile.
+For Android bundle export, from apps/mobile:
 
-In the output, you'll find options to open the app in a
+~~~sh
+npx --no-install expo export --platform android
+~~~
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+EAS profiles are in eas.json. The checked-in staging and production profiles currently name the same Render API host; do not treat staging as an isolated backend without independently verified configuration.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## API and environment
 
-## Get a fresh project
+EXPO_PUBLIC_API_URL configures the Backend API base and EXPO_PUBLIC_GEOAPIFY_API_KEY supports location lookup. Google sign-in identifiers are declared in the Expo app configuration and profile environment. Check the effective profile before testing; never write production data from development/staging builds unless explicitly intended and authorized.
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The root package-lock.json is canonical for this npm workspace. Mobile postinstall builds the local Contracts package. CI builds Contracts before tests and Android export.
