@@ -15,9 +15,20 @@ import publicContentRoutes
     from "./shared/public-content/resolver/public-content.routes";
 import publicContentDiscoveryRoutes
     from "./shared/public-content/discovery/public-content.discovery.routes";
+import { validatePasswordResetLandingUrl } from "./modules/auth/utils/password-reset-link";
 
 
 const app: Express = express();
+
+// Fail fast on a missing or unsafe reset-link destination instead of allowing
+// account-dependent failures from the forgot-password endpoint.
+validatePasswordResetLandingUrl();
+
+// Trust only the immediate Render ingress hop. Do not trust an arbitrary
+// forwarded chain; outside Render, use the socket address by default.
+if (process.env.RENDER === "true") {
+    app.set("trust proxy", 1);
+}
 
 /*Middleware*/
 

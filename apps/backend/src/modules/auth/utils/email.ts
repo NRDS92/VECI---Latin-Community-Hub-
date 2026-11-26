@@ -1,4 +1,5 @@
 import { resend } from "../../../config/resend";
+import { buildPasswordResetUrl } from "./password-reset-link";
 
 export const sendVerificationEmail = async (
     email: string,
@@ -229,9 +230,10 @@ export const sendVerificationEmail = async (
 
 export const sendPasswordResetEmail = async (
     email: string,
-    token: string
+    token: string,
+    locale?: string
 ) => {
-    const url = `https://www.veci-latin.com/en/reset-password/${token}`;
+    const url = buildPasswordResetUrl(token, locale);
 
     await resend.emails.send({
         from: process.env.EMAIL_FROM!,

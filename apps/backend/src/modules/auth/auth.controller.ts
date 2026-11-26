@@ -77,8 +77,12 @@ export const forgotPassword = catchAsync(
   async (req: Request, res: Response) => {
 
     const { email } = req.body;
+    const acceptedLocale = req.acceptsLanguages("en", "es", "de");
 
-    await authService.forgotPassword(email);
+    await authService.forgotPassword(
+      email,
+      typeof acceptedLocale === "string" ? acceptedLocale : undefined
+    );
 
     res.json({
       success: true,
